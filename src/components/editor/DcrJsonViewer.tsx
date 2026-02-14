@@ -1,6 +1,7 @@
 import { Copy, Download } from 'lucide-react'
 import { toast } from 'sonner'
 import { JsonEditor } from './JsonEditor'
+import { DeploymentInstructions } from './DeploymentInstructions'
 import { Button } from '@/components/ui/button'
 import { useDcrState } from '@/store/dcr-context'
 
@@ -44,12 +45,27 @@ export function DcrJsonViewer() {
           Download
         </Button>
       </div>
-      <div className="min-h-0 flex-1 overflow-auto p-4">
-        <JsonEditor
-          value={generatedJson}
-          readOnly
-          placeholder="Generated DCR JSON will appear here..."
-        />
+      <div className="min-h-0 flex-1 flex gap-4 overflow-hidden">
+        {/* JSON Editor - 2/3 width */}
+        <div className="w-2/3 min-h-0 flex flex-col overflow-auto p-4">
+          <h3 className="text-sm font-semibold mb-2 shrink-0">
+            Generated JSON
+          </h3>
+          <div className="min-h-0 flex-1 overflow-auto">
+            <JsonEditor
+              value={generatedJson}
+              readOnly
+              placeholder="Generated DCR JSON will appear here..."
+            />
+          </div>
+        </div>
+
+        {/* Deployment Instructions - 1/3 width */}
+        {generatedJson && (
+          <div className="w-1/3 min-h-0 flex flex-col overflow-auto p-4 border-l">
+            <DeploymentInstructions />
+          </div>
+        )}
       </div>
     </div>
   )
