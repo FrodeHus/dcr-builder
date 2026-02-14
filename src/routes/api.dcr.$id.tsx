@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { getDcrJson } from '@/server/dcr-share-cache'
+import { getDcrJson, setDcrJson } from '@/server/dcr-share-cache'
 
 export const Route = createFileRoute('/api/dcr/$id')({
   server: {
@@ -14,6 +14,17 @@ export const Route = createFileRoute('/api/dcr/$id')({
             'content-type': 'application/json; charset=utf-8',
           },
         })
+      },
+      PUT: async ({ params, request }) => {
+        console.log('[API PUT /api/dcr/$id] Received update for id:', params.id)
+        const body = await request.json().catch(() => null)
+        if (!body?.json) {
+          console.error('[API PUT /api/dcr/$id] Missing json in body')
+          return new Response('Missing json', { status: 400 })
+        }
+        setDcrJson(params.id, body.json)
+        console.log('[API PUT /api/dcr/$id] Cache updated for id:', params.id)
+        return new Response(null, { status: 204 })
       },
     },
   },

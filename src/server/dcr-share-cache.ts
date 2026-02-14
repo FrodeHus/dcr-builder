@@ -25,6 +25,11 @@ export function storeDcrJson(json: string, ttlMs = DEFAULT_TTL_MS) {
   return id
 }
 
+export function setDcrJson(id: string, json: string, ttlMs = DEFAULT_TTL_MS) {
+  cleanupExpired()
+  cache.set(id, { json, expiresAt: Date.now() + ttlMs })
+}
+
 export function getDcrJson(id: string) {
   const entry = cache.get(id)
   if (!entry) return null

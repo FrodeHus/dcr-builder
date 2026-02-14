@@ -6,12 +6,15 @@ export type ActiveTab = 'form' | 'json'
 export type MobileSection = 'source' | 'editor'
 
 export interface DcrState {
+  sessionId: string
   sourceJson: string
   sourceOrigin: SourceOrigin
   sourceFetchedAt: string | null
   activeTab: ActiveTab
   dcrForm: DcrFormData
   generatedJson: string
+  shareId: string
+  shareUrl: string
   validationErrors: Array<ValidationError>
   isDirty: boolean
   isFetching: boolean
@@ -26,18 +29,30 @@ export type DcrAction =
   | { type: 'SET_ACTIVE_TAB'; payload: ActiveTab }
   | { type: 'UPDATE_DCR_FORM'; payload: Partial<DcrFormData> }
   | { type: 'SET_GENERATED_JSON'; payload: string }
+  | { type: 'SET_SHARE_DATA'; payload: { id: string; url: string } }
   | { type: 'SET_VALIDATION_ERRORS'; payload: Array<ValidationError> }
   | { type: 'SET_FETCHING'; payload: boolean }
   | { type: 'SET_FETCH_ERROR'; payload: string | null }
   | { type: 'SET_MOBILE_SECTION'; payload: MobileSection }
+  | { type: 'RESET_SESSION' }
+
+function createSessionId() {
+  if (typeof globalThis.crypto.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID()
+  }
+  return `session-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+}
 
 export const initialState: DcrState = {
+  sessionId: createSessionId(),
   sourceJson: '',
   sourceOrigin: 'local',
   sourceFetchedAt: null,
   activeTab: 'form',
   dcrForm: createDefaultFormData(),
   generatedJson: '',
+  shareId: '',
+  shareUrl: '',
   validationErrors: [],
   isDirty: false,
   isFetching: false,
@@ -82,6 +97,12 @@ export function dcrReducer(state: DcrState, action: DcrAction): DcrState {
       }
     case 'SET_GENERATED_JSON':
       return { ...state, generatedJson: action.payload }
+    case 'SET_SHARE_DATA':
+      return {
+        ...state,
+        shareId: action.payload.id,
+        shareUrl: action.payload.url,
+      }
     case 'SET_VALIDATION_ERRORS':
       return { ...state, validationErrors: action.payload }
     case 'SET_FETCHING':
@@ -90,5 +111,10 @@ export function dcrReducer(state: DcrState, action: DcrAction): DcrState {
       return { ...state, fetchError: action.payload }
     case 'SET_MOBILE_SECTION':
       return { ...state, mobileSection: action.payload }
+    case 'RESET_SESSION':
+      return {
+        ...initialState,
+        sessionId: createSessionId(),
+      }
   }
 }
