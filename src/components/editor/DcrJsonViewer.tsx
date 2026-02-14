@@ -44,7 +44,7 @@ export function DcrJsonViewer() {
           Download
         </Button>
       </div>
-      <div className="flex-1 overflow-auto p-4">
+      <div className="min-h-0 flex-1 overflow-auto p-4">
         <JsonEditor
           value={generatedJson}
           readOnly

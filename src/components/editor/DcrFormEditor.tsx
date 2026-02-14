@@ -3,6 +3,7 @@ import {
   AlertCircle,
   AlertTriangle,
   ChevronDown,
+  HelpCircle,
   Plus,
   Trash2,
 } from 'lucide-react'
@@ -24,8 +25,15 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useDcrDispatch, useDcrState } from '@/store/dcr-context'
 import { inferColumnsFromJson } from '@/lib/dcr-utils'
+import { dcrTooltips } from '@/data/dcr-tooltips'
+import { TooltipLabel } from '@/components/TooltipLabel'
 
 const COLUMN_TYPES: Array<DcrColumnType> = [
   'string',
@@ -194,13 +202,29 @@ export function DcrFormEditor() {
       <Collapsible defaultOpen>
         <CollapsibleTrigger className="flex w-full items-center gap-2 text-sm font-semibold">
           <ChevronDown className="h-4 w-4" />
-          Basics
+          <span className="flex items-center gap-1.5">
+            Basics
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
+                  tabIndex={-1}
+                >
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+                  <span className="sr-only">Basics section information</span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Basic properties of your Data Collection Rule including name,
+                location, and optional description
+              </TooltipContent>
+            </Tooltip>
+          </span>
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-3 space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="dcr-name">
-              Name <span className="text-destructive">*</span>
-            </Label>
+            <TooltipLabel label="Name" tooltip={dcrTooltips.name} required />
             <Input
               id="dcr-name"
               value={dcrForm.name}
@@ -209,9 +233,11 @@ export function DcrFormEditor() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="dcr-location">
-              Location <span className="text-destructive">*</span>
-            </Label>
+            <TooltipLabel
+              label="Location"
+              tooltip={dcrTooltips.location}
+              required
+            />
             <Input
               id="dcr-location"
               value={dcrForm.location}
@@ -220,7 +246,10 @@ export function DcrFormEditor() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="dcr-desc">Description</Label>
+            <TooltipLabel
+              label="Description"
+              tooltip={dcrTooltips.description}
+            />
             <Input
               id="dcr-desc"
               value={dcrForm.description}
@@ -235,13 +264,35 @@ export function DcrFormEditor() {
       <Collapsible defaultOpen>
         <CollapsibleTrigger className="flex w-full items-center gap-2 text-sm font-semibold">
           <ChevronDown className="h-4 w-4" />
-          Stream Declaration
+          <span className="flex items-center gap-1.5">
+            Stream Declaration
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
+                  tabIndex={-1}
+                >
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+                  <span className="sr-only">
+                    Stream declaration information
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Defines the schema of incoming data. Each column represents a
+                property in your JSON with its corresponding data type
+              </TooltipContent>
+            </Tooltip>
+          </span>
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-3 space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="stream-name">
-              Stream Name <span className="text-destructive">*</span>
-            </Label>
+            <TooltipLabel
+              label="Stream Name"
+              tooltip={dcrTooltips.streamName}
+              required
+            />
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Custom-</span>
               <Input
@@ -255,9 +306,11 @@ export function DcrFormEditor() {
           </div>
 
           <div className="space-y-2">
-            <Label>
-              Columns <span className="text-destructive">*</span>
-            </Label>
+            <TooltipLabel
+              label="Columns"
+              tooltip={dcrTooltips.columnType}
+              required
+            />
             {columns.length === 0 && (
               <p className="text-xs text-muted-foreground">
                 Paste JSON in the source pane to auto-infer columns, or add them
@@ -266,35 +319,53 @@ export function DcrFormEditor() {
             )}
             {columns.map((col, i) => (
               <div key={i} className="flex gap-2">
-                <Input
-                  value={col.name}
-                  onChange={(e) => {
-                    const updated = [...columns]
-                    updated[i] = { ...col, name: e.target.value }
-                    setColumns(updated)
-                  }}
-                  placeholder="Column name"
-                  className="flex-1"
-                />
-                <Select
-                  value={col.type}
-                  onValueChange={(val: DcrColumnType) => {
-                    const updated = [...columns]
-                    updated[i] = { ...col, type: val }
-                    setColumns(updated)
-                  }}
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COLUMN_TYPES.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {t}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Input
+                        value={col.name}
+                        onChange={(e) => {
+                          const updated = [...columns]
+                          updated[i] = { ...col, name: e.target.value }
+                          setColumns(updated)
+                        }}
+                        placeholder="Column name"
+                        className="w-full"
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      {dcrTooltips.columnName}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="w-32">
+                      <Select
+                        value={col.type}
+                        onValueChange={(val: DcrColumnType) => {
+                          const updated = [...columns]
+                          updated[i] = { ...col, type: val }
+                          setColumns(updated)
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {COLUMN_TYPES.map((t) => (
+                            <SelectItem key={t} value={t}>
+                              {t}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    {dcrTooltips.columnType}
+                  </TooltipContent>
+                </Tooltip>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -322,7 +393,27 @@ export function DcrFormEditor() {
       <Collapsible defaultOpen>
         <CollapsibleTrigger className="flex w-full items-center gap-2 text-sm font-semibold">
           <ChevronDown className="h-4 w-4" />
-          Destinations
+          <span className="flex items-center gap-1.5">
+            Destinations
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
+                  tabIndex={-1}
+                >
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+                  <span className="sr-only">
+                    Destinations section information
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Specifies where your data will be sent. Currently supports Log
+                Analytics workspaces
+              </TooltipContent>
+            </Tooltip>
+          </span>
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-3 space-y-3">
           {destinations.map((dest, i) => (
@@ -340,10 +431,11 @@ export function DcrFormEditor() {
                 </Button>
               </div>
               <div className="space-y-1.5">
-                <Label>
-                  Workspace Resource ID{' '}
-                  <span className="text-destructive">*</span>
-                </Label>
+                <TooltipLabel
+                  label="Workspace Resource ID"
+                  tooltip={dcrTooltips.workspaceResourceId}
+                  required
+                />
                 <Input
                   value={dest.workspaceResourceId}
                   onChange={(e) =>
@@ -353,10 +445,11 @@ export function DcrFormEditor() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>
-                  Destination Name{' '}
-                  <span className="text-destructive">*</span>
-                </Label>
+                <TooltipLabel
+                  label="Destination Name"
+                  tooltip={dcrTooltips.destinationName}
+                  required
+                />
                 <Input
                   value={dest.name}
                   onChange={(e) => updateDestination(i, 'name', e.target.value)}
@@ -376,7 +469,27 @@ export function DcrFormEditor() {
       <Collapsible defaultOpen>
         <CollapsibleTrigger className="flex w-full items-center gap-2 text-sm font-semibold">
           <ChevronDown className="h-4 w-4" />
-          Data Flows
+          <span className="flex items-center gap-1.5">
+            Data Flows
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
+                  tabIndex={-1}
+                >
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+                  <span className="sr-only">
+                    Data flows section information
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Connects input streams to destinations. Optionally applies KQL
+                transformations to data before ingestion
+              </TooltipContent>
+            </Tooltip>
+          </span>
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-3 space-y-3">
           {dataFlows.map((flow, i) => (
@@ -394,9 +507,11 @@ export function DcrFormEditor() {
                 </Button>
               </div>
               <div className="space-y-1.5">
-                <Label>
-                  Transform KQL <span className="text-destructive">*</span>
-                </Label>
+                <TooltipLabel
+                  label="Transform KQL"
+                  tooltip={dcrTooltips.transformKql}
+                  required
+                />
                 <Textarea
                   value={flow.transformKql}
                   onChange={(e) =>
@@ -407,9 +522,11 @@ export function DcrFormEditor() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>
-                  Output Stream <span className="text-destructive">*</span>
-                </Label>
+                <TooltipLabel
+                  label="Output Stream"
+                  tooltip={dcrTooltips.outputStream}
+                  required
+                />
                 <Input
                   value={flow.outputStream}
                   onChange={(e) =>
