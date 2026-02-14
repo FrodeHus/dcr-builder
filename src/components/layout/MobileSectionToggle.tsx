@@ -4,7 +4,7 @@ import { useDcrDispatch, useDcrState } from '@/store/dcr-context'
 
 const sections: Array<{ value: MobileSection; label: string }> = [
   { value: 'source', label: 'Source JSON' },
-  { value: 'editor', label: 'DCR Editor' },
+  { value: 'editor', label: 'Data Collection Rule Editor' },
 ]
 
 export function MobileSectionToggle() {
