@@ -1,0 +1,32 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+dist-ssr
+.output
+.nitro
+.vinxi
+
+# TanStack generated files
+.tanstack
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Editor & OS
+.DS_Store
+*.local
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# Wrangler (Cloudflare)
+.wrangler
+
+# Misc
+count.txt
+__unconfig*
+*.tsbuildinfo
