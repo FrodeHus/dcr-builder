@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Copy, Download, Link2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { JsonEditor } from './JsonEditor'
 import { DeploymentInstructions } from './DeploymentInstructions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useDcrState } from '@/store/dcr-context'
+import { useDcrDispatch, useDcrState } from '@/store/dcr-context'
 
 export function DcrJsonViewer() {
-  const { generatedJson } = useDcrState()
-  const [shareUrl, setShareUrl] = useState('')
+  const { generatedJson, shareId, shareUrl } = useDcrState()
+  const dispatch = useDcrDispatch()
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(generatedJson)
@@ -28,6 +28,7 @@ export function DcrJsonViewer() {
 
   const handleGenerateUrl = async () => {
     if (!generatedJson) return
+    if (shareId) return
     try {
       const response = await fetch('/api/dcr', {
         method: 'POST',
@@ -41,18 +42,32 @@ export function DcrJsonViewer() {
       const baseUrl =
         typeof window === 'undefined' ? '' : window.location.origin
       const url = `${baseUrl}/api/dcr/${id}`
-      setShareUrl(url)
+      dispatch({ type: 'SET_SHARE_DATA', payload: { id, url } })
       await navigator.clipboard.writeText(url)
       toast.success('Download URL copied to clipboard')
-    } catch (error) {
+    } catch {
       toast.error('Failed to generate URL')
-      console.error(error)
     }
   }
 
   useEffect(() => {
-    setShareUrl('')
-  }, [generatedJson])
+    if (!shareId || !generatedJson) return
+    const updateCache = async () => {
+      try {
+        const response = await fetch(`/api/dcr/${shareId}`, {
+          method: 'PUT',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ json: generatedJson }),
+        })
+        if (!response.ok) {
+          throw new Error('Failed to update cached JSON')
+        }
+      } catch {
+        // silently fail cache update
+      }
+    }
+    void updateCache()
+  }, [generatedJson, shareId])
 
   return (
     <div className="flex flex-1 flex-col">
@@ -79,7 +94,7 @@ export function DcrJsonViewer() {
           variant="outline"
           size="sm"
           onClick={handleGenerateUrl}
-          disabled={!generatedJson}
+          disabled={!generatedJson || !!shareId}
         >
           <Link2 className="mr-1 h-4 w-4" />
           Generate URL

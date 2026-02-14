@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(pnpm dlx shadcn@latest add accordion:*)"
+    ]
+  }
+}

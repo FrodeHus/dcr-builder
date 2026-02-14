@@ -4,6 +4,17 @@ import { DcrJsonViewer } from './DcrJsonViewer'
 import { PanePanel, PaneStickyHeader } from '@/components/layout/PanePanel'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { useDcrDispatch, useDcrState } from '@/store/dcr-context'
 import { generateDcr, validateDcr } from '@/lib/dcr-utils'
 
@@ -37,6 +48,11 @@ export function DcrPane() {
     toast.success('DCR JSON generated')
   }
 
+  const handleNewSession = () => {
+    dispatch({ type: 'RESET_SESSION' })
+    toast.success('Started a new DCR session')
+  }
+
   return (
     <PanePanel className="flex-1">
       <Tabs
@@ -67,6 +83,28 @@ export function DcrPane() {
       </Tabs>
 
       <div className="flex shrink-0 gap-2 border-t p-3">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              New
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Start a new DCR session?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will clear the current source JSON, form values, generated
+                output, validation messages, and any generated download URL.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleNewSession}>
+                Start new
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         <Button variant="outline" size="sm" onClick={handleValidate}>
           Validate
         </Button>
