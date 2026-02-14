@@ -1,0 +1,89 @@
+version: '3.9'
+
+services:
+  app:
+    # Use specific image digest for security (immutable reference)
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    container_name: dcr-builder-app
+    
+    # Restart policy for production reliability
+    restart: unless-stopped
+    
+    # Port mapping (host:container)
+    ports:
+      - "3000:3000"
+    
+    # Environment configuration
+    env_file:
+      - .env.docker
+    
+    environment:
+      # Node.js production mode for security and performance
+      - NODE_ENV=production
+    
+    # Security options
+    security_opt:
+      # Drop dangerous capabilities
+      - no-new-privileges:true
+    
+    cap_drop:
+      - ALL
+    
+    cap_add:
+      - NET_BIND_SERVICE
+    
+    # Resource limits to prevent DoS and resource exhaustion
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    
+    # Read-only filesystem for enhanced security
+    read_only: true
+    
+    # Temporary writable directories needed by the application
+    tmpfs:
+      - /app/tmp
+      - /tmp
+    
+    # Health check configuration
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # User namespace remapping for additional security
+    user: "1001:1001"
+    
+    # Network configuration
+    networks:
+      - dcr-network
+    
+    # Disable privileged mode
+    privileged: false
+    
+    # Set resource limits for /dev/shm
+    shm_size: 64M
+
+networks:
+  dcr-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

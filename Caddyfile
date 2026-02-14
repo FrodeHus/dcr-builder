@@ -1,0 +1,103 @@
+# Caddyfile - Reverse proxy configuration for DCR Builder
+# This file configures Caddy as a reverse proxy with automatic HTTPS
+
+# Replace 'example.com' with your actual domain
+example.com {
+    # Automatic HTTPS via Let's Encrypt
+    # Remove this line if using self-signed certificates
+    tls {
+        # Uncomment below to use custom certificate paths
+        # cert_file /path/to/cert.pem
+        # key_file /path/to/key.pem
+    }
+    
+    # Security headers
+    header {
+        # Prevent clickjacking attacks
+        X-Frame-Options "SAMEORIGIN"
+        
+        # Prevent MIME type sniffing
+        X-Content-Type-Options "nosniff"
+        
+        # Enable XSS protection in older browsers
+        X-XSS-Protection "1; mode=block"
+        
+        # Content Security Policy - restrict resources
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;"
+        
+        # Referrer Policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+        
+        # Feature Policy / Permissions Policy
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        
+        # Disable caching for security-sensitive content
+        Pragma "no-cache"
+        Cache-Control "no-cache, no-store, must-revalidate"
+        
+        # Remove server info from headers
+        -Server
+        
+        # HSTS - enable after testing HTTPS works
+        # Uncomment after confirming HTTPS is working
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    }
+    
+    # Rate limiting
+    rate_limit {
+        # Allow 100 requests per minute per IP
+        zone general {
+            key {remote_host}
+            events 100
+            window 1m
+        }
+    }
+    
+    # Reverse proxy to the application
+    reverse_proxy app:3000 {
+        # Timeout settings
+        transport http {
+            # Connection timeout
+            dial_timeout 5s
+            # Request timeout
+            response_header_timeout 10s
+        }
+        
+        # Add original request headers
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-Host {host}
+        
+        # Keep connection alive
+        header_up Connection keep-alive
+        
+        # Rewrite redirects from app to use HTTPS
+        header_down Location "http://(.*)" "https://$1"
+    }
+    
+    # Health check endpoint
+    route /health {
+        respond "OK" 200
+    }
+    
+    # Redirect non-HTTPS traffic
+    handle_path /* {
+        reverse_proxy app:3000
+    }
+}
+
+# HTTP to HTTPS redirect (localhost exemption)
+http://example.com {
+    # Redirect all HTTP requests to HTTPS
+    redir https://example.com{uri} permanent
+}
+
+# Optional: Staging/test domain without HTTPS
+# Uncomment and modify as needed
+# example-staging.local {
+#    reverse_proxy app:3000 {
+#        header_up X-Forwarded-Proto "http"
+#        header_up X-Forwarded-Host {host}
+#    }
+# }

@@ -1,0 +1,154 @@
+version: '3.9'
+
+# Production-ready Docker Compose configuration
+# Includes reverse proxy for TLS termination and additional security
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    container_name: dcr-builder-app
+    restart: unless-stopped
+    
+    # Only expose on internal network, not directly to host
+    expose:
+      - 3000
+    
+    env_file:
+      - .env.docker
+    
+    environment:
+      - NODE_ENV=production
+    
+    security_opt:
+      - no-new-privileges:true
+    
+    cap_drop:
+      - ALL
+    
+    cap_add:
+      - NET_BIND_SERVICE
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+      
+      # Restart with exponential backoff in case of repeated failures
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    
+    read_only: true
+    
+    tmpfs:
+      - /app/tmp
+      - /tmp
+    
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        labels: "app=dcr-builder"
+    
+    user: "1001:1001"
+    
+    networks:
+      - dcr-network
+    
+    privileged: false
+    shm_size: 64M
+    
+    # Do not expose ports directly
+    depends_on:
+      reverse-proxy:
+        condition: service_healthy
+
+  reverse-proxy:
+    image: caddy:2.8-alpine
+    container_name: dcr-builder-caddy
+    restart: unless-stopped
+    
+    ports:
+      - "80:80"
+      - "443:443"
+    
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-config:/config
+      - caddy-data:/data
+    
+    environment:
+      - ACME_AGREE=true
+    
+    security_opt:
+      - no-new-privileges:true
+    
+    cap_drop:
+      - ALL
+    
+    cap_add:
+      - NET_BIND_SERVICE
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /run
+    
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "app=dcr-builder-proxy"
+    
+    networks:
+      - dcr-network
+    
+    privileged: false
+    shm_size: 32M
+
+volumes:
+  caddy-config:
+    driver: local
+  caddy-data:
+    driver: local
+
+networks:
+  dcr-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

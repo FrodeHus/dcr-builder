@@ -1,0 +1,61 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Dependencies
+node_modules
+yarn.lock
+pnpm-lock.yaml
+
+# Build artifacts
+dist
+build
+.output
+*.tsbuildinfo
+
+# Development
+.env
+.env.local
+.env.*.local
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+coverage
+.nyc_output
+*.lcov
+
+# Documentation
+README.md
+CLAUDE.md
+docs
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+docker-compose.*.yml
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.circleci
+
+# Package managers
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDEs
+*.iml
+.vscode/
+
+# Temporary files
+.tmp
+*.log
