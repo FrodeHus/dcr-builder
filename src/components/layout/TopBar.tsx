@@ -6,11 +6,19 @@ export function TopBar() {
   const { theme, toggleTheme } = useTheme()
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between border-b bg-card/90 px-4 backdrop-blur-sm">
-      <h1 className="text-lg font-semibold tracking-tight text-foreground">
-        DCR Builder
+    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between border-b border-primary/20 bg-gradient-to-r from-primary/50 via-secondary/50 to-primary/5 px-4 backdrop-blur-sm">
+      <h1 className="text-lg font-bold tracking-tight">
+        <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+          Data Collection Rule
+        </span>{' '}
+        <span className="text-foreground">Builder</span>
       </h1>
-      <Button variant="ghost" size="icon" onClick={toggleTheme}>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="text-primary hover:bg-primary/10 hover:text-primary"
+        onClick={toggleTheme}
+      >
         {theme === 'dark' ? (
           <Sun className="h-5 w-5" />
         ) : (

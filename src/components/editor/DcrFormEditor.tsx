@@ -198,7 +198,9 @@ export function DcrFormEditor() {
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-3 space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="dcr-name">Name</Label>
+            <Label htmlFor="dcr-name">
+              Name <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="dcr-name"
               value={dcrForm.name}
@@ -207,7 +209,9 @@ export function DcrFormEditor() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="dcr-location">Location</Label>
+            <Label htmlFor="dcr-location">
+              Location <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="dcr-location"
               value={dcrForm.location}
@@ -235,7 +239,9 @@ export function DcrFormEditor() {
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-3 space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="stream-name">Stream Name</Label>
+            <Label htmlFor="stream-name">
+              Stream Name <span className="text-destructive">*</span>
+            </Label>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Custom-</span>
               <Input
@@ -249,7 +255,9 @@ export function DcrFormEditor() {
           </div>
 
           <div className="space-y-2">
-            <Label>Columns</Label>
+            <Label>
+              Columns <span className="text-destructive">*</span>
+            </Label>
             {columns.length === 0 && (
               <p className="text-xs text-muted-foreground">
                 Paste JSON in the source pane to auto-infer columns, or add them
@@ -331,18 +339,30 @@ export function DcrFormEditor() {
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
-              <Input
-                value={dest.workspaceResourceId}
-                onChange={(e) =>
-                  updateDestination(i, 'workspaceResourceId', e.target.value)
-                }
-                placeholder="/subscriptions/.../workspaces/..."
-              />
-              <Input
-                value={dest.name}
-                onChange={(e) => updateDestination(i, 'name', e.target.value)}
-                placeholder="Destination name"
-              />
+              <div className="space-y-1.5">
+                <Label>
+                  Workspace Resource ID{' '}
+                  <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  value={dest.workspaceResourceId}
+                  onChange={(e) =>
+                    updateDestination(i, 'workspaceResourceId', e.target.value)
+                  }
+                  placeholder="/subscriptions/.../workspaces/..."
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>
+                  Destination Name{' '}
+                  <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  value={dest.name}
+                  onChange={(e) => updateDestination(i, 'name', e.target.value)}
+                  placeholder="Destination name"
+                />
+              </div>
             </div>
           ))}
           <Button variant="outline" size="sm" onClick={addDestination}>
@@ -374,7 +394,9 @@ export function DcrFormEditor() {
                 </Button>
               </div>
               <div className="space-y-1.5">
-                <Label>Transform KQL</Label>
+                <Label>
+                  Transform KQL <span className="text-destructive">*</span>
+                </Label>
                 <Textarea
                   value={flow.transformKql}
                   onChange={(e) =>
@@ -385,7 +407,9 @@ export function DcrFormEditor() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Output Stream</Label>
+                <Label>
+                  Output Stream <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   value={flow.outputStream}
                   onChange={(e) =>
@@ -405,23 +429,30 @@ export function DcrFormEditor() {
 
       {/* Validation Errors */}
       {validationErrors.length > 0 && (
-        <div className="space-y-2">
-          {validationErrors.map((err, i) => (
-            <Alert
-              key={i}
-              variant={err.severity === 'error' ? 'destructive' : 'default'}
-            >
-              {err.severity === 'error' ? (
-                <AlertCircle className="h-4 w-4" />
-              ) : (
-                <AlertTriangle className="h-4 w-4" />
-              )}
-              <AlertDescription>
-                <span className="font-medium">{err.field}:</span> {err.message}
-              </AlertDescription>
-            </Alert>
-          ))}
-        </div>
+        <Collapsible defaultOpen>
+          <CollapsibleTrigger className="flex w-full items-center gap-2 text-sm font-semibold text-destructive">
+            <ChevronDown className="h-4 w-4" />
+            Validation Issues ({validationErrors.length})
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-3 space-y-2">
+            {validationErrors.map((err, i) => (
+              <Alert
+                key={i}
+                variant={err.severity === 'error' ? 'destructive' : 'default'}
+              >
+                {err.severity === 'error' ? (
+                  <AlertCircle className="h-4 w-4" />
+                ) : (
+                  <AlertTriangle className="h-4 w-4" />
+                )}
+                <AlertDescription>
+                  <span className="font-medium">{err.field}:</span>{' '}
+                  {err.message}
+                </AlertDescription>
+              </Alert>
+            ))}
+          </CollapsibleContent>
+        </Collapsible>
       )}
     </div>
   )

@@ -47,7 +47,7 @@ export function DcrPane() {
             payload: val as 'form' | 'json',
           })
         }
-        className="flex flex-1 flex-col"
+        className="flex min-h-0 flex-1 flex-col"
       >
         <PaneStickyHeader>
           <h2 className="text-sm font-semibold">DCR Editor</h2>
@@ -57,16 +57,16 @@ export function DcrPane() {
           </TabsList>
         </PaneStickyHeader>
 
-        <TabsContent value="form" className="flex-1 overflow-auto mt-0">
+        <TabsContent value="form" className="min-h-0 flex-1 overflow-auto mt-0">
           <DcrFormEditor />
         </TabsContent>
 
-        <TabsContent value="json" className="flex flex-1 flex-col mt-0">
+        <TabsContent value="json" className="flex min-h-0 flex-1 flex-col mt-0">
           <DcrJsonViewer />
         </TabsContent>
       </Tabs>
 
-      <div className="flex gap-2 border-t p-3">
+      <div className="flex shrink-0 gap-2 border-t p-3">
         <Button variant="outline" size="sm" onClick={handleValidate}>
           Validate
         </Button>
