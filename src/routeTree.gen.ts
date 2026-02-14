@@ -10,33 +10,52 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiDcrRouteImport } from './routes/api.dcr'
+import { Route as ApiDcrIdRouteImport } from './routes/api.dcr.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDcrRoute = ApiDcrRouteImport.update({
+  id: '/api/dcr',
+  path: '/api/dcr',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDcrIdRoute = ApiDcrIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiDcrRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/dcr': typeof ApiDcrRouteWithChildren
+  '/api/dcr/$id': typeof ApiDcrIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/dcr': typeof ApiDcrRouteWithChildren
+  '/api/dcr/$id': typeof ApiDcrIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/dcr': typeof ApiDcrRouteWithChildren
+  '/api/dcr/$id': typeof ApiDcrIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/api/dcr' | '/api/dcr/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/api/dcr' | '/api/dcr/$id'
+  id: '__root__' | '/' | '/api/dcr' | '/api/dcr/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiDcrRoute: typeof ApiDcrRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +67,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/dcr': {
+      id: '/api/dcr'
+      path: '/api/dcr'
+      fullPath: '/api/dcr'
+      preLoaderRoute: typeof ApiDcrRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/dcr/$id': {
+      id: '/api/dcr/$id'
+      path: '/$id'
+      fullPath: '/api/dcr/$id'
+      preLoaderRoute: typeof ApiDcrIdRouteImport
+      parentRoute: typeof ApiDcrRoute
+    }
   }
 }
 
+interface ApiDcrRouteChildren {
+  ApiDcrIdRoute: typeof ApiDcrIdRoute
+}
+
+const ApiDcrRouteChildren: ApiDcrRouteChildren = {
+  ApiDcrIdRoute: ApiDcrIdRoute,
+}
+
+const ApiDcrRouteWithChildren =
+  ApiDcrRoute._addFileChildren(ApiDcrRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiDcrRoute: ApiDcrRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
