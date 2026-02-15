@@ -22,6 +22,25 @@ services:
     environment:
       - NODE_ENV=production
     
+    labels:
+      # Enable Traefik for this container
+      - "traefik.enable=true"
+      # Traefik router for HTTPS
+      - "traefik.http.routers.dcr-builder.rule=Host(`dcr.reothor.no`)"
+      - "traefik.http.routers.dcr-builder.entrypoints=websecure"
+      - "traefik.http.routers.dcr-builder.tls.certresolver=letsencrypt"
+      # Load balancer configuration
+      - "traefik.http.services.dcr-builder.loadbalancer.server.port=3000"
+      # Optional: Add service middleware
+      - "traefik.http.routers.dcr-builder.middlewares=dcr-headers"
+      # Security headers middleware
+      - "traefik.http.middlewares.dcr-headers.headers.accesscontrolalloworiginlist=https://dcr.reothor.no"
+      - "traefik.http.middlewares.dcr-headers.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.dcr-headers.headers.addvaryheader=true"
+      - "traefik.http.middlewares.dcr-headers.headers.stsseconds=63072000"
+      - "traefik.http.middlewares.dcr-headers.headers.stsincludesubdomains=true"
+      - "traefik.http.middlewares.dcr-headers.headers.stspreload=true"
+    
     security_opt:
       - no-new-privileges:true
     
