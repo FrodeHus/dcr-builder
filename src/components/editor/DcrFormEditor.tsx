@@ -408,6 +408,33 @@ export function DcrFormEditor() {
                         },
                       })
                     }
+                    onBlur={(e) => {
+                      const value = e.target.value.trim()
+                      if (!value) return
+
+                      let formatted = value
+                      
+                      // Add prefix if not already present
+                      if (!formatted.startsWith('Custom-') && !formatted.startsWith('Microsoft-')) {
+                        formatted = `Custom-${formatted}`
+                      }
+                      
+                      // Add suffix if it's a Custom table and doesn't already have it
+                      if (formatted.startsWith('Custom-') && !formatted.endsWith('_CL')) {
+                        formatted = `${formatted}_CL`
+                      }
+                      
+                      // Update if changed
+                      if (formatted !== value) {
+                        dispatch({
+                          type: 'UPDATE_DATA_FLOW',
+                          payload: {
+                            index: i,
+                            patch: { outputStream: formatted },
+                          },
+                        })
+                      }
+                    }}
                     placeholder="Custom-MyTable_CL or Microsoft-TableName"
                   />
                 </div>
