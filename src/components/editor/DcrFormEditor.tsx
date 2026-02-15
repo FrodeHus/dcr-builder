@@ -206,28 +206,28 @@ export function DcrFormEditor() {
     <div className="space-y-4 p-4">
       {/* Basics */}
       <Collapsible defaultOpen>
-        <CollapsibleTrigger className="flex w-full items-center gap-2 text-sm font-semibold">
-          <ChevronDown className="h-4 w-4" />
-          <span className="flex items-center gap-1.5">
-            Basics
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
-                  tabIndex={-1}
-                >
-                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
-                  <span className="sr-only">Basics section information</span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                Basic properties of your Data Collection Rule including name,
-                location, and optional description
-              </TooltipContent>
-            </Tooltip>
-          </span>
-        </CollapsibleTrigger>
+        <div className="flex w-full items-center justify-between">
+          <CollapsibleTrigger className="flex flex-1 items-center gap-2 text-sm font-semibold">
+            <ChevronDown className="h-4 w-4" />
+            <span>Basics</span>
+          </CollapsibleTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
+                tabIndex={-1}
+              >
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+                <span className="sr-only">Basics section information</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              Basic properties of your Data Collection Rule including name,
+              location, and optional description
+            </TooltipContent>
+          </Tooltip>
+        </div>
         <CollapsibleContent className="mt-3 space-y-3">
           <div className="space-y-1.5">
             <TooltipLabel label="Name" tooltip={dcrTooltips.name} required />
@@ -268,30 +268,28 @@ export function DcrFormEditor() {
 
       {/* Stream Declaration */}
       <Collapsible defaultOpen>
-        <CollapsibleTrigger className="flex w-full items-center gap-2 text-sm font-semibold">
-          <ChevronDown className="h-4 w-4" />
-          <span className="flex items-center gap-1.5">
-            Stream Declaration
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
-                  tabIndex={-1}
-                >
-                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
-                  <span className="sr-only">
-                    Stream declaration information
-                  </span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                Defines the schema of incoming data. Each column represents a
-                property in your JSON with its corresponding data type
-              </TooltipContent>
-            </Tooltip>
-          </span>
-        </CollapsibleTrigger>
+        <div className="flex w-full items-center justify-between">
+          <CollapsibleTrigger className="flex flex-1 items-center gap-2 text-sm font-semibold">
+            <ChevronDown className="h-4 w-4" />
+            <span>Stream Declaration</span>
+          </CollapsibleTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
+                tabIndex={-1}
+              >
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+                <span className="sr-only">Stream declaration information</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              Defines the schema of incoming data. Each column represents a
+              property in your JSON with its corresponding data type
+            </TooltipContent>
+          </Tooltip>
+        </div>
         <CollapsibleContent className="mt-3 space-y-3">
           <div className="space-y-1.5">
             <TooltipLabel
@@ -397,30 +395,30 @@ export function DcrFormEditor() {
 
       {/* Destinations */}
       <Collapsible defaultOpen>
-        <CollapsibleTrigger className="flex w-full items-center gap-2 text-sm font-semibold">
-          <ChevronDown className="h-4 w-4" />
-          <span className="flex items-center gap-1.5">
-            Destinations
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
-                  tabIndex={-1}
-                >
-                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
-                  <span className="sr-only">
-                    Destinations section information
-                  </span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                Specifies where your data will be sent. Currently supports Log
-                Analytics workspaces
-              </TooltipContent>
-            </Tooltip>
-          </span>
-        </CollapsibleTrigger>
+        <div className="flex w-full items-center justify-between">
+          <CollapsibleTrigger className="flex flex-1 items-center gap-2 text-sm font-semibold">
+            <ChevronDown className="h-4 w-4" />
+            <span>Destinations</span>
+          </CollapsibleTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
+                tabIndex={-1}
+              >
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+                <span className="sr-only">
+                  Destinations section information
+                </span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              Specifies where your data will be sent. Currently supports Log
+              Analytics workspaces
+            </TooltipContent>
+          </Tooltip>
+        </div>
         <CollapsibleContent className="mt-3 space-y-3">
           {destinations.map((dest, i) => (
             <div key={i} className="space-y-2 rounded-md border p-3">
@@ -473,30 +471,28 @@ export function DcrFormEditor() {
 
       {/* Data Flows */}
       <Collapsible defaultOpen>
-        <CollapsibleTrigger className="flex w-full items-center gap-2 text-sm font-semibold">
-          <ChevronDown className="h-4 w-4" />
-          <span className="flex items-center gap-1.5">
-            Data Flows
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
-                  tabIndex={-1}
-                >
-                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
-                  <span className="sr-only">
-                    Data flows section information
-                  </span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                Connects input streams to destinations. Optionally applies KQL
-                transformations to data before ingestion
-              </TooltipContent>
-            </Tooltip>
-          </span>
-        </CollapsibleTrigger>
+        <div className="flex w-full items-center justify-between">
+          <CollapsibleTrigger className="flex flex-1 items-center gap-2 text-sm font-semibold">
+            <ChevronDown className="h-4 w-4" />
+            <span>Data Flows</span>
+          </CollapsibleTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
+                tabIndex={-1}
+              >
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+                <span className="sr-only">Data flows section information</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              Connects input streams to destinations. Optionally applies KQL
+              transformations to data before ingestion
+            </TooltipContent>
+          </Tooltip>
+        </div>
         <CollapsibleContent className="mt-3 space-y-3">
           {dataFlows.map((flow, i) => (
             <div key={i} className="space-y-2 rounded-md border p-3">

@@ -5,18 +5,11 @@ import { BuilderLayout } from '@/components/layout/BuilderLayout'
 import { MobileSectionToggle } from '@/components/layout/MobileSectionToggle'
 import { SourcePane } from '@/components/source/SourcePane'
 import { DcrPane } from '@/components/editor/DcrPane'
-import { LandingPage } from '@/components/LandingPage'
-import { useLandingPageVisibility } from '@/hooks/use-landing-page-visibility'
+import { LandingPageOverlay } from '@/components/LandingPageOverlay'
 
 export const Route = createFileRoute('/')({ component: App })
 
 function App() {
-  const { showLanding, handleGetStarted } = useLandingPageVisibility()
-
-  if (showLanding) {
-    return <LandingPage onGetStarted={handleGetStarted} />
-  }
-
   return (
     <DcrProvider>
       <div className="flex h-screen flex-col bg-background">
@@ -24,6 +17,8 @@ function App() {
         <MobileSectionToggle />
         <BuilderLayout leftPane={<SourcePane />} rightPane={<DcrPane />} />
       </div>
+      {/* Landing page overlay that shows on first visit */}
+      <LandingPageOverlay />
     </DcrProvider>
   )
 }

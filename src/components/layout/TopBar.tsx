@@ -1,9 +1,15 @@
 import { Moon, Sun } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/hooks/use-theme'
 
 export function TopBar() {
   const { theme, toggleTheme } = useTheme()
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
 
   return (
     <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between border-b border-primary/20 bg-gradient-to-r from-primary/50 via-secondary/50 to-primary/5 px-4 backdrop-blur-sm">
@@ -19,10 +25,14 @@ export function TopBar() {
         className="text-primary hover:bg-primary/10 hover:text-primary"
         onClick={toggleTheme}
       >
-        {theme === 'dark' ? (
-          <Sun className="h-5 w-5" />
+        {isHydrated ? (
+          theme === 'dark' ? (
+            <Sun className="h-5 w-5" />
+          ) : (
+            <Moon className="h-5 w-5" />
+          )
         ) : (
-          <Moon className="h-5 w-5" />
+          <Sun className="h-5 w-5" />
         )}
         <span className="sr-only">Toggle theme</span>
       </Button>
