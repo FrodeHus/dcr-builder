@@ -36,6 +36,7 @@ export function SourceFooter() {
     a.download = 'source.json'
     a.click()
     URL.revokeObjectURL(url)
+    toast.success('Downloaded source.json')
   }
 
   return (

@@ -1,13 +1,14 @@
 import { useState } from 'react'
-import { ChevronDown, Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '@/components/ui/accordion'
 import { useDcrDispatch, useDcrState } from '@/store/dcr-context'
 
 interface Header {
@@ -18,7 +19,6 @@ interface Header {
 export function FetchControls() {
   const [url, setUrl] = useState('')
   const [headers, setHeaders] = useState<Array<Header>>([])
-  const [headersOpen, setHeadersOpen] = useState(false)
   const { isFetching } = useDcrState()
   const dispatch = useDcrDispatch()
 
@@ -33,7 +33,10 @@ export function FetchControls() {
     )
 
   const handleFetch = async () => {
-    if (!url.trim()) return
+    if (!url.trim()) {
+      toast.error('Please enter a URL')
+      return
+    }
 
     dispatch({ type: 'SET_FETCHING', payload: true })
     dispatch({ type: 'SET_FETCH_ERROR', payload: null })
@@ -93,45 +96,42 @@ export function FetchControls() {
         </Button>
       </div>
 
-      <Collapsible open={headersOpen} onOpenChange={setHeadersOpen}>
-        <CollapsibleTrigger asChild>
-          <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-            <ChevronDown
-              className={`h-3 w-3 transition-transform ${headersOpen ? 'rotate-0' : '-rotate-90'}`}
-            />
+      <Accordion type="single" collapsible>
+        <AccordionItem value="headers">
+          <AccordionTrigger className="text-xs text-muted-foreground hover:text-foreground">
             Headers {headers.length > 0 && `(${headers.length})`}
-          </button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="mt-2 space-y-2">
-          {headers.map((h, i) => (
-            <div key={i} className="flex gap-2">
-              <Input
-                placeholder="Key"
-                value={h.key}
-                onChange={(e) => updateHeader(i, 'key', e.target.value)}
-                className="flex-1"
-              />
-              <Input
-                placeholder="Value"
-                value={h.value}
-                onChange={(e) => updateHeader(i, 'value', e.target.value)}
-                className="flex-1"
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => removeHeader(i)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
-          <Button variant="outline" size="sm" onClick={addHeader}>
-            <Plus className="mr-1 h-3 w-3" />
-            Add Header
-          </Button>
-        </CollapsibleContent>
-      </Collapsible>
+          </AccordionTrigger>
+          <AccordionContent className="mt-2 space-y-2">
+            {headers.map((h, i) => (
+              <div key={i} className="flex gap-2">
+                <Input
+                  placeholder="Key"
+                  value={h.key}
+                  onChange={(e) => updateHeader(i, 'key', e.target.value)}
+                  className="flex-1"
+                />
+                <Input
+                  placeholder="Value"
+                  value={h.value}
+                  onChange={(e) => updateHeader(i, 'value', e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeHeader(i)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            <Button variant="outline" size="sm" onClick={addHeader}>
+              <Plus className="mr-1 h-3 w-3" />
+              Add Header
+            </Button>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   )
 }

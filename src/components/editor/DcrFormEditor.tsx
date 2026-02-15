@@ -2,7 +2,6 @@ import { useCallback, useEffect } from 'react'
 import {
   AlertCircle,
   AlertTriangle,
-  ChevronDown,
   HelpCircle,
   Plus,
   Trash2,
@@ -20,10 +19,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '@/components/ui/accordion'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Tooltip,
@@ -203,376 +203,385 @@ export function DcrFormEditor() {
   }
 
   return (
-    <div className="space-y-4 p-4">
-      {/* Basics */}
-      <Collapsible defaultOpen>
-        <div className="flex w-full items-center justify-between">
-          <CollapsibleTrigger className="flex flex-1 items-center gap-2 text-sm font-semibold">
-            <ChevronDown className="h-4 w-4" />
-            <span>Basics</span>
-          </CollapsibleTrigger>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
-                tabIndex={-1}
-              >
-                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
-                <span className="sr-only">Basics section information</span>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              Basic properties of your Data Collection Rule including name,
-              location, and optional description
-            </TooltipContent>
-          </Tooltip>
-        </div>
-        <CollapsibleContent className="mt-3 space-y-3">
-          <div className="space-y-1.5">
-            <TooltipLabel label="Name" tooltip={dcrTooltips.name} required />
-            <Input
-              id="dcr-name"
-              value={dcrForm.name}
-              onChange={(e) => update({ name: e.target.value })}
-              placeholder="my-data-collection-rule"
-            />
+    <div className="p-4">
+      <Accordion type="multiple" defaultValue={['basics']}>
+        {/* Basics */}
+        <AccordionItem value="basics">
+          <div className="flex w-full items-center justify-between">
+            <AccordionTrigger className="flex flex-1 items-center gap-2 text-sm font-semibold">
+              <span>Basics</span>
+            </AccordionTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
+                  tabIndex={-1}
+                >
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+                  <span className="sr-only">Basics section information</span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Basic properties of your Data Collection Rule including name,
+                location, and optional description
+              </TooltipContent>
+            </Tooltip>
           </div>
-          <div className="space-y-1.5">
-            <TooltipLabel
-              label="Location"
-              tooltip={dcrTooltips.location}
-              required
-            />
-            <Input
-              id="dcr-location"
-              value={dcrForm.location}
-              onChange={(e) => update({ location: e.target.value })}
-              placeholder="westeurope"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <TooltipLabel
-              label="Description"
-              tooltip={dcrTooltips.description}
-            />
-            <Input
-              id="dcr-desc"
-              value={dcrForm.description}
-              onChange={(e) => update({ description: e.target.value })}
-              placeholder="Optional description"
-            />
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-
-      {/* Stream Declaration */}
-      <Collapsible defaultOpen>
-        <div className="flex w-full items-center justify-between">
-          <CollapsibleTrigger className="flex flex-1 items-center gap-2 text-sm font-semibold">
-            <ChevronDown className="h-4 w-4" />
-            <span>Stream Declaration</span>
-          </CollapsibleTrigger>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
-                tabIndex={-1}
-              >
-                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
-                <span className="sr-only">Stream declaration information</span>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              Defines the schema of incoming data. Each column represents a
-              property in your JSON with its corresponding data type
-            </TooltipContent>
-          </Tooltip>
-        </div>
-        <CollapsibleContent className="mt-3 space-y-3">
-          <div className="space-y-1.5">
-            <TooltipLabel
-              label="Stream Name"
-              tooltip={dcrTooltips.streamName}
-              required
-            />
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Custom-</span>
+          <AccordionContent className="mt-3 space-y-3">
+            <div className="space-y-1.5">
+              <TooltipLabel label="Name" tooltip={dcrTooltips.name} required />
               <Input
-                id="stream-name"
-                value={streamName.replace(/^Custom-/, '')}
-                onChange={(e) => setStreamName(e.target.value)}
-                placeholder="MyStream"
-                className="flex-1"
+                id="dcr-name"
+                value={dcrForm.name}
+                onChange={(e) => update({ name: e.target.value })}
+                placeholder="my-data-collection-rule"
               />
             </div>
-          </div>
+            <div className="space-y-1.5">
+              <TooltipLabel
+                label="Location"
+                tooltip={dcrTooltips.location}
+                required
+              />
+              <Input
+                id="dcr-location"
+                value={dcrForm.location}
+                onChange={(e) => update({ location: e.target.value })}
+                placeholder="westeurope"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <TooltipLabel
+                label="Description"
+                tooltip={dcrTooltips.description}
+              />
+              <Input
+                id="dcr-desc"
+                value={dcrForm.description}
+                onChange={(e) => update({ description: e.target.value })}
+                placeholder="Optional description"
+              />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
 
-          <div className="space-y-2">
-            <TooltipLabel
-              label="Columns"
-              tooltip={dcrTooltips.columnType}
-              required
-            />
-            {columns.length === 0 && (
-              <p className="text-xs text-muted-foreground">
-                Paste JSON in the source pane to auto-infer columns, or add them
-                manually.
-              </p>
-            )}
-            {columns.map((col, i) => (
-              <div key={i} className="flex gap-2">
-                <div className="flex-1">
+        {/* Stream Declaration */}
+        <AccordionItem value="stream-declaration">
+          <div className="flex w-full items-center justify-between">
+            <AccordionTrigger className="flex flex-1 items-center gap-2 text-sm font-semibold">
+              <span>Stream Declaration</span>
+            </AccordionTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
+                  tabIndex={-1}
+                >
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+                  <span className="sr-only">
+                    Stream declaration information
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Defines the schema of incoming data. Each column represents a
+                property in your JSON with its corresponding data type
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <AccordionContent className="mt-3 space-y-3">
+            <div className="space-y-1.5">
+              <TooltipLabel
+                label="Stream Name"
+                tooltip={dcrTooltips.streamName}
+                required
+              />
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Custom-</span>
+                <Input
+                  id="stream-name"
+                  value={streamName.replace(/^Custom-/, '')}
+                  onChange={(e) => setStreamName(e.target.value)}
+                  placeholder="MyStream"
+                  className="flex-1"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <TooltipLabel
+                label="Columns"
+                tooltip={dcrTooltips.columnType}
+                required
+              />
+              {columns.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Paste JSON in the source pane to auto-infer columns, or add
+                  them manually.
+                </p>
+              )}
+              {columns.map((col, i) => (
+                <div key={i} className="flex gap-2">
+                  <div className="flex-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Input
+                          value={col.name}
+                          onChange={(e) => {
+                            const updated = [...columns]
+                            updated[i] = { ...col, name: e.target.value }
+                            setColumns(updated)
+                          }}
+                          placeholder="Column name"
+                          className="w-full"
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        {dcrTooltips.columnName}
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Input
-                        value={col.name}
-                        onChange={(e) => {
-                          const updated = [...columns]
-                          updated[i] = { ...col, name: e.target.value }
-                          setColumns(updated)
-                        }}
-                        placeholder="Column name"
-                        className="w-full"
-                      />
+                      <div className="w-32">
+                        <Select
+                          value={col.type}
+                          onValueChange={(val: DcrColumnType) => {
+                            const updated = [...columns]
+                            updated[i] = { ...col, type: val }
+                            setColumns(updated)
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {COLUMN_TYPES.map((t) => (
+                              <SelectItem key={t} value={t}>
+                                {t}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">
-                      {dcrTooltips.columnName}
+                      {dcrTooltips.columnType}
                     </TooltipContent>
                   </Tooltip>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() =>
+                      setColumns(columns.filter((_, j) => j !== i))
+                    }
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="w-32">
-                      <Select
-                        value={col.type}
-                        onValueChange={(val: DcrColumnType) => {
-                          const updated = [...columns]
-                          updated[i] = { ...col, type: val }
-                          setColumns(updated)
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {COLUMN_TYPES.map((t) => (
-                            <SelectItem key={t} value={t}>
-                              {t}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    {dcrTooltips.columnType}
-                  </TooltipContent>
-                </Tooltip>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setColumns(columns.filter((_, j) => j !== i))}
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setColumns([...columns, { name: '', type: 'string' }])
+                }
+              >
+                <Plus className="mr-1 h-3 w-3" />
+                Add Column
+              </Button>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Destinations */}
+        <AccordionItem value="destinations">
+          <div className="flex w-full items-center justify-between">
+            <AccordionTrigger className="flex flex-1 items-center gap-2 text-sm font-semibold">
+              <span>Destinations</span>
+            </AccordionTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
+                  tabIndex={-1}
                 >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                setColumns([...columns, { name: '', type: 'string' }])
-              }
-            >
-              <Plus className="mr-1 h-3 w-3" />
-              Add Column
-            </Button>
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+                  <span className="sr-only">
+                    Destinations section information
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Specifies where your data will be sent. Currently supports Log
+                Analytics workspaces
+              </TooltipContent>
+            </Tooltip>
           </div>
-        </CollapsibleContent>
-      </Collapsible>
-
-      {/* Destinations */}
-      <Collapsible defaultOpen>
-        <div className="flex w-full items-center justify-between">
-          <CollapsibleTrigger className="flex flex-1 items-center gap-2 text-sm font-semibold">
-            <ChevronDown className="h-4 w-4" />
-            <span>Destinations</span>
-          </CollapsibleTrigger>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
-                tabIndex={-1}
-              >
-                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
-                <span className="sr-only">
-                  Destinations section information
-                </span>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              Specifies where your data will be sent. Currently supports Log
-              Analytics workspaces
-            </TooltipContent>
-          </Tooltip>
-        </div>
-        <CollapsibleContent className="mt-3 space-y-3">
-          {destinations.map((dest, i) => (
-            <div key={i} className="space-y-2 rounded-md border p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-muted-foreground">
-                  Destination {i + 1}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeDestination(i)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+          <AccordionContent className="mt-3 space-y-3">
+            {destinations.map((dest, i) => (
+              <div key={i} className="space-y-2 rounded-md border p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Destination {i + 1}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeDestination(i)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="space-y-1.5">
+                  <TooltipLabel
+                    label="Workspace Resource ID"
+                    tooltip={dcrTooltips.workspaceResourceId}
+                    required
+                  />
+                  <Input
+                    value={dest.workspaceResourceId}
+                    onChange={(e) =>
+                      updateDestination(
+                        i,
+                        'workspaceResourceId',
+                        e.target.value,
+                      )
+                    }
+                    placeholder="/subscriptions/.../workspaces/..."
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <TooltipLabel
+                    label="Destination Name"
+                    tooltip={dcrTooltips.destinationName}
+                    required
+                  />
+                  <Input
+                    value={dest.name}
+                    onChange={(e) =>
+                      updateDestination(i, 'name', e.target.value)
+                    }
+                    placeholder="Destination name"
+                  />
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <TooltipLabel
-                  label="Workspace Resource ID"
-                  tooltip={dcrTooltips.workspaceResourceId}
-                  required
-                />
-                <Input
-                  value={dest.workspaceResourceId}
-                  onChange={(e) =>
-                    updateDestination(i, 'workspaceResourceId', e.target.value)
-                  }
-                  placeholder="/subscriptions/.../workspaces/..."
-                />
-              </div>
-              <div className="space-y-1.5">
-                <TooltipLabel
-                  label="Destination Name"
-                  tooltip={dcrTooltips.destinationName}
-                  required
-                />
-                <Input
-                  value={dest.name}
-                  onChange={(e) => updateDestination(i, 'name', e.target.value)}
-                  placeholder="Destination name"
-                />
-              </div>
-            </div>
-          ))}
-          <Button variant="outline" size="sm" onClick={addDestination}>
-            <Plus className="mr-1 h-3 w-3" />
-            Add Destination
-          </Button>
-        </CollapsibleContent>
-      </Collapsible>
-
-      {/* Data Flows */}
-      <Collapsible defaultOpen>
-        <div className="flex w-full items-center justify-between">
-          <CollapsibleTrigger className="flex flex-1 items-center gap-2 text-sm font-semibold">
-            <ChevronDown className="h-4 w-4" />
-            <span>Data Flows</span>
-          </CollapsibleTrigger>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
-                tabIndex={-1}
-              >
-                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
-                <span className="sr-only">Data flows section information</span>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              Connects input streams to destinations. Optionally applies KQL
-              transformations to data before ingestion
-            </TooltipContent>
-          </Tooltip>
-        </div>
-        <CollapsibleContent className="mt-3 space-y-3">
-          {dataFlows.map((flow, i) => (
-            <div key={i} className="space-y-2 rounded-md border p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-muted-foreground">
-                  Flow {i + 1}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeDataFlow(i)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="space-y-1.5">
-                <TooltipLabel
-                  label="Transform KQL"
-                  tooltip={dcrTooltips.transformKql}
-                  required
-                />
-                <Textarea
-                  value={flow.transformKql}
-                  onChange={(e) =>
-                    updateDataFlow(i, { transformKql: e.target.value })
-                  }
-                  placeholder="source"
-                  rows={2}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <TooltipLabel
-                  label="Output Stream"
-                  tooltip={dcrTooltips.outputStream}
-                  required
-                />
-                <Input
-                  value={flow.outputStream}
-                  onChange={(e) =>
-                    updateDataFlow(i, { outputStream: e.target.value })
-                  }
-                  placeholder="Custom-MyTable_CL or Microsoft-TableName"
-                />
-              </div>
-            </div>
-          ))}
-          <Button variant="outline" size="sm" onClick={addDataFlow}>
-            <Plus className="mr-1 h-3 w-3" />
-            Add Data Flow
-          </Button>
-        </CollapsibleContent>
-      </Collapsible>
-
-      {/* Validation Errors */}
-      {validationErrors.length > 0 && (
-        <Collapsible defaultOpen>
-          <CollapsibleTrigger className="flex w-full items-center gap-2 text-sm font-semibold text-destructive">
-            <ChevronDown className="h-4 w-4" />
-            Validation Issues ({validationErrors.length})
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-3 space-y-2">
-            {validationErrors.map((err, i) => (
-              <Alert
-                key={i}
-                variant={err.severity === 'error' ? 'destructive' : 'default'}
-              >
-                {err.severity === 'error' ? (
-                  <AlertCircle className="h-4 w-4" />
-                ) : (
-                  <AlertTriangle className="h-4 w-4" />
-                )}
-                <AlertDescription>
-                  <span className="font-medium">{err.field}:</span>{' '}
-                  {err.message}
-                </AlertDescription>
-              </Alert>
             ))}
-          </CollapsibleContent>
-        </Collapsible>
-      )}
+            <Button variant="outline" size="sm" onClick={addDestination}>
+              <Plus className="mr-1 h-3 w-3" />
+              Add Destination
+            </Button>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Data Flows */}
+        <AccordionItem value="data-flows">
+          <div className="flex w-full items-center justify-between">
+            <AccordionTrigger className="flex flex-1 items-center gap-2 text-sm font-semibold">
+              <span>Data Flows</span>
+            </AccordionTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
+                  tabIndex={-1}
+                >
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+                  <span className="sr-only">
+                    Data flows section information
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Connects input streams to destinations. Optionally applies KQL
+                transformations to data before ingestion
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <AccordionContent className="mt-3 space-y-3">
+            {dataFlows.map((flow, i) => (
+              <div key={i} className="space-y-2 rounded-md border p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Flow {i + 1}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeDataFlow(i)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="space-y-1.5">
+                  <TooltipLabel
+                    label="Transform KQL"
+                    tooltip={dcrTooltips.transformKql}
+                    required
+                  />
+                  <Textarea
+                    value={flow.transformKql}
+                    onChange={(e) =>
+                      updateDataFlow(i, { transformKql: e.target.value })
+                    }
+                    placeholder="source"
+                    rows={2}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <TooltipLabel
+                    label="Output Stream"
+                    tooltip={dcrTooltips.outputStream}
+                    required
+                  />
+                  <Input
+                    value={flow.outputStream}
+                    onChange={(e) =>
+                      updateDataFlow(i, { outputStream: e.target.value })
+                    }
+                    placeholder="Custom-MyTable_CL or Microsoft-TableName"
+                  />
+                </div>
+              </div>
+            ))}
+            <Button variant="outline" size="sm" onClick={addDataFlow}>
+              <Plus className="mr-1 h-3 w-3" />
+              Add Data Flow
+            </Button>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Validation Errors */}
+        {validationErrors.length > 0 && (
+          <AccordionItem value="validation-errors">
+            <AccordionTrigger className="flex w-full items-center gap-2 text-sm font-semibold text-destructive">
+              <span>Validation Issues ({validationErrors.length})</span>
+            </AccordionTrigger>
+            <AccordionContent className="mt-3 space-y-2">
+              {validationErrors.map((err, i) => (
+                <Alert
+                  key={i}
+                  variant={err.severity === 'error' ? 'destructive' : 'default'}
+                >
+                  {err.severity === 'error' ? (
+                    <AlertCircle className="h-4 w-4" />
+                  ) : (
+                    <AlertTriangle className="h-4 w-4" />
+                  )}
+                  <AlertDescription>
+                    <span className="font-medium">{err.field}:</span>{' '}
+                    {err.message}
+                  </AlertDescription>
+                </Alert>
+              ))}
+            </AccordionContent>
+          </AccordionItem>
+        )}
+      </Accordion>
     </div>
   )
 }

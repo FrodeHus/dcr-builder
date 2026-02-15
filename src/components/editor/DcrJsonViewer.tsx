@@ -13,7 +13,7 @@ export function DcrJsonViewer() {
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(generatedJson)
-    toast.success('Copied to clipboard')
+    toast.success('DCR JSON copied to clipboard')
   }
 
   const handleDownload = () => {
@@ -24,6 +24,7 @@ export function DcrJsonViewer() {
     a.download = 'dcr.json'
     a.click()
     URL.revokeObjectURL(url)
+    toast.success('Downloaded dcr.json')
   }
 
   const handleGenerateUrl = async () => {
