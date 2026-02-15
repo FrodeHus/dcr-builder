@@ -5,31 +5,29 @@ import { JsonEditor } from './JsonEditor'
 import { DeploymentInstructions } from './DeploymentInstructions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useDcrState, useDcrDispatch } from '@/store/dcr-context'
+import { useDcrDispatch, useDcrState } from '@/store/dcr-context'
+import { copyToClipboard, downloadJsonFile } from '@/lib/utils'
 
 export function DcrJsonViewer() {
   const { generatedJson, shareId, shareUrl } = useDcrState()
   const dispatch = useDcrDispatch()
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(generatedJson)
-    toast.success('DCR JSON copied to clipboard')
+    const ok = await copyToClipboard(generatedJson)
+    if (ok) {
+      toast.success('DCR JSON copied to clipboard')
+    } else {
+      toast.error('Failed to copy to clipboard')
+    }
   }
 
   const handleDownload = () => {
-    const blob = new Blob([generatedJson], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'dcr.json'
-    a.click()
-    URL.revokeObjectURL(url)
+    downloadJsonFile(generatedJson, 'dcr.json')
     toast.success('Downloaded dcr.json')
   }
 
   const handleGenerateUrl = async () => {
-    if (!generatedJson) return
-    if (shareId) return
+    if (!generatedJson || shareId) return
     try {
       const response = await fetch('/api/dcr', {
         method: 'POST',
@@ -44,25 +42,19 @@ export function DcrJsonViewer() {
         typeof window === 'undefined' ? '' : window.location.origin
       const url = `${baseUrl}/api/dcr/${id}`
       dispatch({ type: 'SET_SHARE_DATA', payload: { id, url } })
-      await navigator.clipboard.writeText(url)
-      toast.success('Download URL copied to clipboard')
-    } catch (error) {
+      const ok = await copyToClipboard(url)
+      if (ok) {
+        toast.success('Download URL copied to clipboard')
+      } else {
+        toast.success('Download URL generated')
+      }
+    } catch {
       toast.error('Failed to generate URL')
-      console.error(error)
     }
   }
 
   useEffect(() => {
-    if (!shareId || !generatedJson) {
-      console.log(
-        '[DcrJsonViewer] Skip update - shareId:',
-        shareId,
-        'hasJson:',
-        !!generatedJson,
-      )
-      return
-    }
-    console.log('[DcrJsonViewer] Updating cache for shareId:', shareId)
+    if (!shareId || !generatedJson) return
     const updateCache = async () => {
       try {
         const response = await fetch(`/api/dcr/${shareId}`, {
@@ -71,15 +63,10 @@ export function DcrJsonViewer() {
           body: JSON.stringify({ json: generatedJson }),
         })
         if (!response.ok) {
-          console.error(
-            '[DcrJsonViewer] PUT failed with status:',
-            response.status,
-          )
           throw new Error('Failed to update cached JSON')
         }
-        console.log('[DcrJsonViewer] Cache updated successfully')
-      } catch (error) {
-        console.error('[DcrJsonViewer] Update error:', error)
+      } catch {
+        toast.warning('Share link may be out of date')
       }
     }
     void updateCache()

@@ -1,9 +1,9 @@
 import { ExternalLink } from 'lucide-react'
 import {
   Accordion,
+  AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  AccordionContent,
 } from '@/components/ui/accordion'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useDcrState } from '@/store/dcr-context'

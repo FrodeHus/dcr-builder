@@ -15,22 +15,10 @@ export const dcrTooltips = {
   // Stream Declaration section
   streamName:
     'Name of the input stream that receives data. Must start with "Custom-" for custom streams. Used in Data Flows to reference this stream.',
-  streamDeclaration:
-    'Defines the schema of incoming data. Each column must have a name and type. The shape of incoming JSON data will be matched to these columns.',
   columnName:
     'The name of the property in your incoming JSON data that maps to this column.',
   columnType:
     'The data type for this column. Maps JSON types: string→string, number→real/int/long, boolean→boolean, object/array→dynamic, ISO dates→datetime.',
-  dataType_string: 'Text data. Use for any string values.',
-  dataType_int: 'Integer values in the range of -2147483648 to 2147483647.',
-  dataType_long:
-    'Large integer values in the range of -9223372036854775808 to 9223372036854775807.',
-  dataType_real: 'Floating-point numbers (decimal values).',
-  dataType_boolean: 'True or false values.',
-  dataType_dynamic:
-    'Complex objects or arrays. Stored as JSON for flexible querying.',
-  dataType_datetime:
-    'Date and time values. Supports ISO 8601 format (e.g., 2024-02-14T10:30:00Z).',
 
   // Destinations section
   subscriptionId:
@@ -46,8 +34,4 @@ export const dcrTooltips = {
     'Optional Kusto Query Language (KQL) transformation applied to incoming data before ingestion. Use "source" for no transformation. The transformation must output data matching your output stream schema.',
   outputStream:
     'The destination table name. Use "Custom-[TableName]_CL" for custom tables or "Microsoft-[TableName]" for standard tables. The suffix "_CL" indicates a custom table.',
-
-  // Column type reference
-  columnTypeReference:
-    'Supported types: string, int, long, real, boolean, dynamic (JSON), datetime (ISO 8601)',
 }

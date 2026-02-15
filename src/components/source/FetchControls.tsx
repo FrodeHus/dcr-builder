@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
   Accordion,
+  AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  AccordionContent,
 } from '@/components/ui/accordion'
 import { useDcrDispatch, useDcrState } from '@/store/dcr-context'
 
@@ -39,7 +39,6 @@ export function FetchControls() {
     }
 
     dispatch({ type: 'SET_FETCHING', payload: true })
-    dispatch({ type: 'SET_FETCH_ERROR', payload: null })
 
     try {
       const reqHeaders: Record<string, string> = {}
@@ -65,7 +64,6 @@ export function FetchControls() {
           : err instanceof Error
             ? err.message
             : 'Failed to fetch'
-      dispatch({ type: 'SET_FETCH_ERROR', payload: message })
       toast.error(message)
     } finally {
       dispatch({ type: 'SET_FETCHING', payload: false })

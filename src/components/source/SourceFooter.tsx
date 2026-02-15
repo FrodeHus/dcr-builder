@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { useDcrDispatch, useDcrState } from '@/store/dcr-context'
 import { parseJsonSafely } from '@/lib/dcr-utils'
+import { copyToClipboard, downloadJsonFile } from '@/lib/utils'
 
 export function SourceFooter() {
   const { sourceJson } = useDcrState()
@@ -24,18 +25,16 @@ export function SourceFooter() {
   }
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(sourceJson)
-    toast.success('Copied to clipboard')
+    const ok = await copyToClipboard(sourceJson)
+    if (ok) {
+      toast.success('Copied to clipboard')
+    } else {
+      toast.error('Failed to copy to clipboard')
+    }
   }
 
   const handleDownload = () => {
-    const blob = new Blob([sourceJson], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'source.json'
-    a.click()
-    URL.revokeObjectURL(url)
+    downloadJsonFile(sourceJson, 'source.json')
     toast.success('Downloaded source.json')
   }
 
