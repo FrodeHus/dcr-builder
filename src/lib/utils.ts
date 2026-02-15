@@ -7,7 +7,15 @@ export function cn(...inputs: Array<ClassValue>) {
 }
 
 export function downloadJsonFile(content: string, filename: string): void {
-  const blob = new Blob([content], { type: 'application/json' })
+  downloadFile(content, filename, 'application/json')
+}
+
+export function downloadFile(
+  content: string,
+  filename: string,
+  mimeType = 'text/plain',
+): void {
+  const blob = new Blob([content], { type: mimeType })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

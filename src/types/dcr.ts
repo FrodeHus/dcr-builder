@@ -41,6 +41,7 @@ export interface DcrFormData {
   name: string
   location: string
   description: string
+  dataCollectionEndpointId: string
   streamDeclarations: Record<string, DcrStreamDeclaration>
   destinations: DcrDestinations
   dataFlows: Array<DcrDataFlow>

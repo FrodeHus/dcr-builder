@@ -1,29 +1,64 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Copy, Download, Link2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { JsonEditor } from './JsonEditor'
 import { DeploymentInstructions } from './DeploymentInstructions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useDcrDispatch, useDcrState } from '@/store/dcr-context'
-import { copyToClipboard, downloadJsonFile } from '@/lib/utils'
+import { copyToClipboard, downloadFile, downloadJsonFile } from '@/lib/utils'
+import { generateArmTemplate, generateBicep } from '@/lib/dcr-utils'
+
+type OutputFormat = 'json' | 'arm' | 'bicep'
+
+const formatConfig: Record<
+  OutputFormat,
+  { filename: string; label: string; toastName: string }
+> = {
+  json: { filename: 'dcr.json', label: 'JSON', toastName: 'DCR JSON' },
+  arm: {
+    filename: 'dcr-template.json',
+    label: 'ARM',
+    toastName: 'ARM template',
+  },
+  bicep: { filename: 'main.bicep', label: 'Bicep', toastName: 'Bicep' },
+}
 
 export function DcrJsonViewer() {
-  const { generatedJson, shareId, shareUrl } = useDcrState()
+  const { generatedJson, shareId, shareUrl, dcrForm } = useDcrState()
   const dispatch = useDcrDispatch()
+  const [format, setFormat] = useState<OutputFormat>('json')
+
+  const displayedContent = useMemo(() => {
+    if (!generatedJson) return ''
+    switch (format) {
+      case 'arm':
+        return generateArmTemplate(dcrForm)
+      case 'bicep':
+        return generateBicep(dcrForm)
+      default:
+        return generatedJson
+    }
+  }, [generatedJson, format, dcrForm])
 
   const handleCopy = async () => {
-    const ok = await copyToClipboard(generatedJson)
+    const ok = await copyToClipboard(displayedContent)
     if (ok) {
-      toast.success('DCR JSON copied to clipboard')
+      toast.success(`${formatConfig[format].toastName} copied to clipboard`)
     } else {
       toast.error('Failed to copy to clipboard')
     }
   }
 
   const handleDownload = () => {
-    downloadJsonFile(generatedJson, 'dcr.json')
-    toast.success('Downloaded dcr.json')
+    const { filename, toastName } = formatConfig[format]
+    if (format === 'bicep') {
+      downloadFile(displayedContent, filename, 'text/plain')
+    } else {
+      downloadJsonFile(displayedContent, filename)
+    }
+    toast.success(`Downloaded ${filename}`)
   }
 
   const handleGenerateUrl = async () => {
@@ -74,7 +109,7 @@ export function DcrJsonViewer() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex gap-2 border-b p-3">
+      <div className="flex items-center gap-2 border-b p-3">
         <Button
           variant="outline"
           size="sm"
@@ -115,18 +150,35 @@ export function DcrJsonViewer() {
             </span>
           </div>
         )}
+        <Tabs
+          value={format}
+          onValueChange={(v) => setFormat(v as OutputFormat)}
+          className="ml-auto"
+        >
+          <TabsList className="h-8">
+            <TabsTrigger value="json" className="text-xs px-2 py-1">
+              JSON
+            </TabsTrigger>
+            <TabsTrigger value="arm" className="text-xs px-2 py-1">
+              ARM
+            </TabsTrigger>
+            <TabsTrigger value="bicep" className="text-xs px-2 py-1">
+              Bicep
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
       <div className="min-h-0 flex-1 flex gap-4 overflow-hidden">
         {/* JSON Editor - 2/3 width */}
         <div className="w-2/3 min-h-0 flex flex-col overflow-auto p-4">
           <h3 className="text-sm font-semibold mb-2 shrink-0">
-            Generated JSON
+            Generated {formatConfig[format].label}
           </h3>
           <div className="min-h-0 flex-1 overflow-auto">
             <JsonEditor
-              value={generatedJson}
+              value={displayedContent}
               readOnly
-              placeholder="Generated DCR JSON will appear here..."
+              placeholder="Generated DCR output will appear here..."
             />
           </div>
         </div>

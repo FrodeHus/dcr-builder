@@ -192,7 +192,6 @@ export function generateDcr(formData: DcrFormData): object {
   )
 
   return {
-    name: formData.name,
     location: formData.location,
     kind: 'Direct',
     properties: {
@@ -372,11 +371,74 @@ export function validateDcr(formData: DcrFormData): Array<ValidationError> {
   return errors
 }
 
+export function generateArmTemplate(formData: DcrFormData): string {
+  const dcr = generateDcr(formData)
+  const template = {
+    $schema:
+      'https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#',
+    contentVersion: '1.0.0.0',
+    resources: [
+      {
+        type: 'Microsoft.Insights/dataCollectionRules',
+        apiVersion: '2023-03-11',
+        name: formData.name,
+        ...dcr,
+      },
+    ],
+  }
+  return JSON.stringify(template, null, 2)
+}
+
+function toBicepValue(value: unknown, indent: number): string {
+  const pad = '  '.repeat(indent)
+  const innerPad = '  '.repeat(indent + 1)
+
+  if (value === null || value === undefined) {
+    return 'null'
+  }
+  if (typeof value === 'string') {
+    return `'${value.replace(/'/g, "''")}'`
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value)
+  }
+  if (Array.isArray(value)) {
+    if (value.length === 0) return '[]'
+    const items = value.map((item) => `${innerPad}${toBicepValue(item, indent + 1)}`)
+    return `[\n${items.join('\n')}\n${pad}]`
+  }
+  if (typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+    if (entries.length === 0) return '{}'
+    const lines = entries.map(
+      ([k, v]) => `${innerPad}${k}: ${toBicepValue(v, indent + 1)}`,
+    )
+    return `{\n${lines.join('\n')}\n${pad}}`
+  }
+  return String(value)
+}
+
+export function generateBicep(formData: DcrFormData): string {
+  const dcr = generateDcr(formData) as Record<string, unknown>
+  const lines: Array<string> = [
+    `resource dcrRule 'Microsoft.Insights/dataCollectionRules@2023-03-11' = {`,
+    `  name: '${formData.name.replace(/'/g, "''")}'`,
+  ]
+
+  for (const [key, value] of Object.entries(dcr)) {
+    lines.push(`  ${key}: ${toBicepValue(value, 1)}`)
+  }
+
+  lines.push('}')
+  return lines.join('\n')
+}
+
 export function createDefaultFormData(): DcrFormData {
   return {
     name: '',
     location: '',
     description: '',
+    dataCollectionEndpointId: '',
     streamDeclarations: {},
     destinations: { logAnalytics: [] },
     dataFlows: [],
