@@ -31,8 +31,6 @@ function isIso8601Date(value: string): boolean {
 
 /**
  * Infers the DCR column type from a JavaScript value
- * @param value - The value to infer type from
- * @param depth - Current nesting depth (to prevent deep recursion)
  */
 function inferType(value: unknown, depth = 0): DcrColumnType {
   if (value === null || value === undefined) return 'string'
@@ -46,7 +44,6 @@ function inferType(value: unknown, depth = 0): DcrColumnType {
     return isIso8601Date(value) ? 'datetime' : 'string'
   }
 
-  // Deep nesting detected - treat as dynamic
   if (depth > MAX_NESTING_DEPTH) return 'dynamic'
 
   if (Array.isArray(value) || typeof value === 'object') return 'dynamic'
@@ -67,26 +64,25 @@ function validateJsonSize(jsonString: string): void {
   }
 }
 
+function generateId(): string {
+  return crypto.randomUUID()
+}
+
 /**
  * Infers columns from JSON by sampling multiple objects for consistency checking
- * @param json - Parsed JSON object or array
- * @returns Array of inferred columns with types
  */
 export function inferColumnsFromJson(json: unknown): Array<DcrColumn> {
   if (json === null || json === undefined) return []
 
-  // Sample up to 10 objects to check type consistency
   const samples: Array<Record<string, unknown>> = []
 
   if (Array.isArray(json)) {
     if (json.length === 0) return []
-    // Sample first, middle, and last items plus random items
     const sampleIndices = new Set([
       0,
       Math.floor(json.length / 2),
       json.length - 1,
     ])
-    // Add up to 7 random samples
     while (sampleIndices.size < Math.min(10, json.length)) {
       sampleIndices.add(Math.floor(Math.random() * json.length))
     }
@@ -104,30 +100,22 @@ export function inferColumnsFromJson(json: unknown): Array<DcrColumn> {
 
   if (samples.length === 0) return []
 
-  // Collect all keys from all samples
   const allKeys = new Set<string>()
   for (const sample of samples) {
-    if (typeof sample === 'object' && sample !== null) {
-      Object.keys(sample).forEach((key) => allKeys.add(key))
-    }
+    Object.keys(sample).forEach((key) => allKeys.add(key))
   }
 
-  // Infer types by checking consistency across samples
   const columns: Array<DcrColumn> = []
   for (const key of allKeys) {
     const types = new Map<DcrColumnType, number>()
-    let foundInSamples = 0
 
     for (const sample of samples) {
       if (key in sample) {
-        foundInSamples++
-        const value = sample[key]
-        const type = inferType(value)
+        const type = inferType(sample[key])
         types.set(type, (types.get(type) ?? 0) + 1)
       }
     }
 
-    // Use most common type (handles mixed types gracefully)
     let inferredType: DcrColumnType = 'string'
     let maxCount = 0
 
@@ -139,6 +127,7 @@ export function inferColumnsFromJson(json: unknown): Array<DcrColumn> {
     }
 
     columns.push({
+      id: generateId(),
       name: key,
       type: inferredType,
     })
@@ -149,8 +138,6 @@ export function inferColumnsFromJson(json: unknown): Array<DcrColumn> {
 
 /**
  * Safely parses and validates JSON input
- * @param jsonString - Raw JSON string
- * @returns Parsed JSON object
  * @throws Error if JSON is invalid or exceeds size limits
  */
 export function parseJsonSafely(jsonString: string): unknown {
@@ -165,13 +152,43 @@ export function parseJsonSafely(jsonString: string): unknown {
 }
 
 export function generateDcr(formData: DcrFormData): object {
+  const streamDeclarations: Record<
+    string,
+    { columns: Array<{ name: string; type: DcrColumnType }> }
+  > = {}
+  for (const [streamKey, decl] of Object.entries(
+    formData.streamDeclarations,
+  )) {
+    streamDeclarations[streamKey] = {
+      columns: decl.columns.map(({ name, type }) => ({ name, type })),
+    }
+  }
+
+  const logAnalytics = formData.destinations.logAnalytics.map(
+    ({ workspaceResourceId, name: destName }) => ({
+      workspaceResourceId,
+      name: destName,
+    }),
+  )
+
+  const dataFlows = formData.dataFlows.map(
+    ({ streams, destinations: flowDests, transformKql, outputStream }) => ({
+      streams,
+      destinations: flowDests,
+      transformKql,
+      outputStream,
+    }),
+  )
+
   return {
+    name: formData.name,
     location: formData.location,
     kind: 'Direct',
     properties: {
-      streamDeclarations: formData.streamDeclarations,
-      destinations: formData.destinations,
-      dataFlows: formData.dataFlows,
+      ...(formData.description ? { description: formData.description } : {}),
+      streamDeclarations,
+      destinations: { logAnalytics },
+      dataFlows,
     },
   }
 }
@@ -179,7 +196,6 @@ export function generateDcr(formData: DcrFormData): object {
 export function validateDcr(formData: DcrFormData): Array<ValidationError> {
   const errors: Array<ValidationError> = []
 
-  // Validate name
   if (!formData.name.trim()) {
     errors.push({
       field: 'name',
@@ -194,7 +210,6 @@ export function validateDcr(formData: DcrFormData): Array<ValidationError> {
     })
   }
 
-  // Validate location
   if (!formData.location.trim()) {
     errors.push({
       field: 'location',
@@ -204,7 +219,6 @@ export function validateDcr(formData: DcrFormData): Array<ValidationError> {
     })
   }
 
-  // Validate stream declarations
   const streamNames = Object.keys(formData.streamDeclarations)
   if (streamNames.length === 0) {
     errors.push({
@@ -215,45 +229,42 @@ export function validateDcr(formData: DcrFormData): Array<ValidationError> {
     })
   }
 
-  for (const name of streamNames) {
-    // Stream name validation
-    if (!name.startsWith('Custom-')) {
+  for (const streamKey of streamNames) {
+    if (!streamKey.startsWith('Custom-')) {
       errors.push({
         field: 'streamDeclarations',
-        message: `Stream name "${name}" must start with "Custom-" prefix (e.g., "Custom-MyStream")`,
+        message: `Stream name "${streamKey}" must start with "Custom-" prefix (e.g., "Custom-MyStream")`,
         severity: 'error',
       })
     }
-    if (name.length > 64) {
+    if (streamKey.length > 64) {
       errors.push({
         field: 'streamDeclarations',
-        message: `Stream name "${name}" exceeds 64 character limit`,
+        message: `Stream name "${streamKey}" exceeds 64 character limit`,
         severity: 'error',
       })
     }
 
-    const cols = formData.streamDeclarations[name].columns
+    const cols = formData.streamDeclarations[streamKey].columns
     if (cols.length === 0) {
       errors.push({
         field: 'streamDeclarations',
-        message: `Stream "${name}" must have at least one column. Paste JSON in the Source pane to auto-infer columns.`,
+        message: `Stream "${streamKey}" must have at least one column. Paste JSON in the Source pane to auto-infer columns.`,
         severity: 'error',
       })
     }
 
-    // Column validation
     for (const col of cols) {
       if (!col.name.trim()) {
         errors.push({
           field: 'streamDeclarations',
-          message: `Stream "${name}" has a column with empty name`,
+          message: `Stream "${streamKey}" has a column with empty name`,
           severity: 'error',
         })
       }
     }
   }
 
-  // Validate destinations
   if (formData.destinations.logAnalytics.length === 0) {
     errors.push({
       field: 'destinations',
@@ -294,7 +305,6 @@ export function validateDcr(formData: DcrFormData): Array<ValidationError> {
     }
   }
 
-  // Validate data flows
   if (formData.dataFlows.length === 0) {
     errors.push({
       field: 'dataFlows',
@@ -335,7 +345,8 @@ export function validateDcr(formData: DcrFormData): Array<ValidationError> {
     if (!flow.outputStream.trim()) {
       errors.push({
         field: 'dataFlows',
-        message: 'Output stream is required (e.g., "Custom-ProcessedData_CL")',
+        message:
+          'Output stream is required (e.g., "Custom-ProcessedData_CL")',
         severity: 'warning',
       })
     }

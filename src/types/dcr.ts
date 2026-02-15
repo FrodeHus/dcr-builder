@@ -8,6 +8,7 @@ export type DcrColumnType =
   | 'datetime'
 
 export interface DcrColumn {
+  id: string
   name: string
   type: DcrColumnType
 }
@@ -17,6 +18,7 @@ export interface DcrStreamDeclaration {
 }
 
 export interface DcrLogAnalyticsDestination {
+  id: string
   workspaceResourceId: string
   name: string
 }
@@ -26,6 +28,7 @@ export interface DcrDestinations {
 }
 
 export interface DcrDataFlow {
+  id: string
   streams: Array<string>
   destinations: Array<string>
   transformKql: string

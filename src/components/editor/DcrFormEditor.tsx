@@ -1,15 +1,7 @@
-import { useCallback, useEffect } from 'react'
-import {
-  AlertCircle,
-  AlertTriangle,
-  HelpCircle,
-  Plus,
-  Trash2,
-} from 'lucide-react'
-import type { DcrColumn, DcrColumnType, DcrDataFlow } from '@/types/dcr'
+import { AlertCircle, AlertTriangle, Plus, Trash2 } from 'lucide-react'
+import type { DcrColumnType } from '@/types/dcr'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
@@ -20,9 +12,9 @@ import {
 } from '@/components/ui/select'
 import {
   Accordion,
+  AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  AccordionContent,
 } from '@/components/ui/accordion'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
@@ -31,8 +23,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useDcrDispatch, useDcrState } from '@/store/dcr-context'
-import { inferColumnsFromJson } from '@/lib/dcr-utils'
 import { dcrTooltips } from '@/data/dcr-tooltips'
+import { HelpTooltip } from '@/components/HelpTooltip'
 import { TooltipLabel } from '@/components/TooltipLabel'
 
 const COLUMN_TYPES: Array<DcrColumnType> = [
@@ -46,21 +38,8 @@ const COLUMN_TYPES: Array<DcrColumnType> = [
 ]
 
 export function DcrFormEditor() {
-  const { dcrForm, sourceJson, validationErrors } = useDcrState()
+  const { dcrForm, validationErrors } = useDcrState()
   const dispatch = useDcrDispatch()
-
-  const update = useCallback(
-    (
-      patch: Parameters<typeof dispatch>[0] extends { payload: infer P }
-        ? P extends Record<string, unknown>
-          ? P
-          : never
-        : never,
-    ) => {
-      dispatch({ type: 'UPDATE_DCR_FORM', payload: patch })
-    },
-    [dispatch],
-  )
 
   const streamName =
     Object.keys(dcrForm.streamDeclarations)[0] || 'Custom-MyStream'
@@ -68,139 +47,8 @@ export function DcrFormEditor() {
     (streamName in dcrForm.streamDeclarations
       ? dcrForm.streamDeclarations[streamName].columns
       : undefined) ?? []
-
-  const setColumns = useCallback(
-    (cols: Array<DcrColumn>) => {
-      dispatch({
-        type: 'UPDATE_DCR_FORM',
-        payload: {
-          streamDeclarations: {
-            [streamName]: { columns: cols },
-          },
-        },
-      })
-    },
-    [dispatch, streamName],
-  )
-
-  const setStreamName = useCallback(
-    (newName: string) => {
-      const prefixed = newName.startsWith('Custom-')
-        ? newName
-        : `Custom-${newName}`
-      dispatch({
-        type: 'UPDATE_DCR_FORM',
-        payload: {
-          streamDeclarations: {
-            [prefixed]: { columns },
-          },
-        },
-      })
-    },
-    [dispatch, columns],
-  )
-
-  // Infer columns when source JSON changes
-  useEffect(() => {
-    if (!sourceJson.trim()) return
-    try {
-      const parsed = JSON.parse(sourceJson)
-      const inferred = inferColumnsFromJson(parsed)
-      if (inferred.length > 0) {
-        setColumns(inferred)
-      }
-    } catch (error) {
-      // Invalid JSON or inference error - log for debugging
-      if (process.env.NODE_ENV === 'development') {
-        console.debug(
-          'Column inference skipped:',
-          error instanceof Error ? error.message : 'Unknown error',
-        )
-      }
-    }
-  }, [sourceJson, setColumns])
-
   const destinations = dcrForm.destinations.logAnalytics
   const dataFlows = dcrForm.dataFlows
-
-  const addDestination = () => {
-    dispatch({
-      type: 'UPDATE_DCR_FORM',
-      payload: {
-        destinations: {
-          logAnalytics: [
-            ...destinations,
-            { workspaceResourceId: '', name: '' },
-          ],
-        },
-      },
-    })
-  }
-
-  const removeDestination = (index: number) => {
-    dispatch({
-      type: 'UPDATE_DCR_FORM',
-      payload: {
-        destinations: {
-          logAnalytics: destinations.filter((_, i) => i !== index),
-        },
-      },
-    })
-  }
-
-  const updateDestination = (
-    index: number,
-    field: 'workspaceResourceId' | 'name',
-    value: string,
-  ) => {
-    dispatch({
-      type: 'UPDATE_DCR_FORM',
-      payload: {
-        destinations: {
-          logAnalytics: destinations.map((d, i) =>
-            i === index ? { ...d, [field]: value } : d,
-          ),
-        },
-      },
-    })
-  }
-
-  const addDataFlow = () => {
-    dispatch({
-      type: 'UPDATE_DCR_FORM',
-      payload: {
-        dataFlows: [
-          ...dataFlows,
-          {
-            streams: [streamName],
-            destinations: destinations.length > 0 ? [destinations[0].name] : [],
-            transformKql: 'source',
-            outputStream: '',
-          },
-        ],
-      },
-    })
-  }
-
-  const removeDataFlow = (index: number) => {
-    dispatch({
-      type: 'UPDATE_DCR_FORM',
-      payload: {
-        dataFlows: dataFlows.filter((_, i) => i !== index),
-      },
-    })
-  }
-
-  const updateDataFlow = (index: number, patch: Partial<DcrDataFlow>) => {
-    dispatch({
-      type: 'UPDATE_DCR_FORM',
-      payload: {
-        dataFlows: dataFlows.map((f, i) =>
-          i === index ? { ...f, ...patch } : f,
-        ),
-      },
-    })
-  }
 
   return (
     <div className="p-4">
@@ -211,22 +59,10 @@ export function DcrFormEditor() {
             <AccordionTrigger className="flex flex-1 items-center gap-2 text-sm font-semibold">
               <span>Basics</span>
             </AccordionTrigger>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
-                  tabIndex={-1}
-                >
-                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
-                  <span className="sr-only">Basics section information</span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                Basic properties of your Data Collection Rule including name,
-                location, and optional description
-              </TooltipContent>
-            </Tooltip>
+            <HelpTooltip
+              content="Basic properties of your Data Collection Rule including name, location, and optional description"
+              srLabel="Basics section information"
+            />
           </div>
           <AccordionContent className="mt-3 space-y-3">
             <div className="space-y-1.5">
@@ -234,7 +70,12 @@ export function DcrFormEditor() {
               <Input
                 id="dcr-name"
                 value={dcrForm.name}
-                onChange={(e) => update({ name: e.target.value })}
+                onChange={(e) =>
+                  dispatch({
+                    type: 'UPDATE_DCR_FORM',
+                    payload: { name: e.target.value },
+                  })
+                }
                 placeholder="my-data-collection-rule"
               />
             </div>
@@ -247,7 +88,12 @@ export function DcrFormEditor() {
               <Input
                 id="dcr-location"
                 value={dcrForm.location}
-                onChange={(e) => update({ location: e.target.value })}
+                onChange={(e) =>
+                  dispatch({
+                    type: 'UPDATE_DCR_FORM',
+                    payload: { location: e.target.value },
+                  })
+                }
                 placeholder="westeurope"
               />
             </div>
@@ -259,7 +105,12 @@ export function DcrFormEditor() {
               <Input
                 id="dcr-desc"
                 value={dcrForm.description}
-                onChange={(e) => update({ description: e.target.value })}
+                onChange={(e) =>
+                  dispatch({
+                    type: 'UPDATE_DCR_FORM',
+                    payload: { description: e.target.value },
+                  })
+                }
                 placeholder="Optional description"
               />
             </div>
@@ -272,24 +123,10 @@ export function DcrFormEditor() {
             <AccordionTrigger className="flex flex-1 items-center gap-2 text-sm font-semibold">
               <span>Stream Declaration</span>
             </AccordionTrigger>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
-                  tabIndex={-1}
-                >
-                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
-                  <span className="sr-only">
-                    Stream declaration information
-                  </span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                Defines the schema of incoming data. Each column represents a
-                property in your JSON with its corresponding data type
-              </TooltipContent>
-            </Tooltip>
+            <HelpTooltip
+              content="Defines the schema of incoming data. Each column represents a property in your JSON with its corresponding data type"
+              srLabel="Stream declaration information"
+            />
           </div>
           <AccordionContent className="mt-3 space-y-3">
             <div className="space-y-1.5">
@@ -303,7 +140,12 @@ export function DcrFormEditor() {
                 <Input
                   id="stream-name"
                   value={streamName.replace(/^Custom-/, '')}
-                  onChange={(e) => setStreamName(e.target.value)}
+                  onChange={(e) =>
+                    dispatch({
+                      type: 'SET_STREAM_NAME',
+                      payload: e.target.value,
+                    })
+                  }
                   placeholder="MyStream"
                   className="flex-1"
                 />
@@ -322,18 +164,23 @@ export function DcrFormEditor() {
                   them manually.
                 </p>
               )}
-              {columns.map((col, i) => (
-                <div key={i} className="flex gap-2">
+              {columns.map((col) => (
+                <div key={col.id} className="flex gap-2">
                   <div className="flex-1">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Input
                           value={col.name}
-                          onChange={(e) => {
-                            const updated = [...columns]
-                            updated[i] = { ...col, name: e.target.value }
-                            setColumns(updated)
-                          }}
+                          onChange={(e) =>
+                            dispatch({
+                              type: 'SET_COLUMNS',
+                              payload: columns.map((c) =>
+                                c.id === col.id
+                                  ? { ...c, name: e.target.value }
+                                  : c,
+                              ),
+                            })
+                          }
                           placeholder="Column name"
                           className="w-full"
                         />
@@ -348,11 +195,14 @@ export function DcrFormEditor() {
                       <div className="w-32">
                         <Select
                           value={col.type}
-                          onValueChange={(val: DcrColumnType) => {
-                            const updated = [...columns]
-                            updated[i] = { ...col, type: val }
-                            setColumns(updated)
-                          }}
+                          onValueChange={(val: DcrColumnType) =>
+                            dispatch({
+                              type: 'SET_COLUMNS',
+                              payload: columns.map((c) =>
+                                c.id === col.id ? { ...c, type: val } : c,
+                              ),
+                            })
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -375,7 +225,10 @@ export function DcrFormEditor() {
                     variant="ghost"
                     size="icon"
                     onClick={() =>
-                      setColumns(columns.filter((_, j) => j !== i))
+                      dispatch({
+                        type: 'SET_COLUMNS',
+                        payload: columns.filter((c) => c.id !== col.id),
+                      })
                     }
                   >
                     <Trash2 className="h-4 w-4" />
@@ -386,7 +239,17 @@ export function DcrFormEditor() {
                 variant="outline"
                 size="sm"
                 onClick={() =>
-                  setColumns([...columns, { name: '', type: 'string' }])
+                  dispatch({
+                    type: 'SET_COLUMNS',
+                    payload: [
+                      ...columns,
+                      {
+                        id: crypto.randomUUID(),
+                        name: '',
+                        type: 'string',
+                      },
+                    ],
+                  })
                 }
               >
                 <Plus className="mr-1 h-3 w-3" />
@@ -402,28 +265,14 @@ export function DcrFormEditor() {
             <AccordionTrigger className="flex flex-1 items-center gap-2 text-sm font-semibold">
               <span>Destinations</span>
             </AccordionTrigger>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
-                  tabIndex={-1}
-                >
-                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
-                  <span className="sr-only">
-                    Destinations section information
-                  </span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                Specifies where your data will be sent. Currently supports Log
-                Analytics workspaces
-              </TooltipContent>
-            </Tooltip>
+            <HelpTooltip
+              content="Specifies where your data will be sent. Currently supports Log Analytics workspaces"
+              srLabel="Destinations section information"
+            />
           </div>
           <AccordionContent className="mt-3 space-y-3">
             {destinations.map((dest, i) => (
-              <div key={i} className="space-y-2 rounded-md border p-3">
+              <div key={dest.id} className="space-y-2 rounded-md border p-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-muted-foreground">
                     Destination {i + 1}
@@ -431,7 +280,9 @@ export function DcrFormEditor() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => removeDestination(i)}
+                    onClick={() =>
+                      dispatch({ type: 'REMOVE_DESTINATION', payload: i })
+                    }
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -445,11 +296,14 @@ export function DcrFormEditor() {
                   <Input
                     value={dest.workspaceResourceId}
                     onChange={(e) =>
-                      updateDestination(
-                        i,
-                        'workspaceResourceId',
-                        e.target.value,
-                      )
+                      dispatch({
+                        type: 'UPDATE_DESTINATION',
+                        payload: {
+                          index: i,
+                          field: 'workspaceResourceId',
+                          value: e.target.value,
+                        },
+                      })
                     }
                     placeholder="/subscriptions/.../workspaces/..."
                   />
@@ -463,14 +317,25 @@ export function DcrFormEditor() {
                   <Input
                     value={dest.name}
                     onChange={(e) =>
-                      updateDestination(i, 'name', e.target.value)
+                      dispatch({
+                        type: 'UPDATE_DESTINATION',
+                        payload: {
+                          index: i,
+                          field: 'name',
+                          value: e.target.value,
+                        },
+                      })
                     }
                     placeholder="Destination name"
                   />
                 </div>
               </div>
             ))}
-            <Button variant="outline" size="sm" onClick={addDestination}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => dispatch({ type: 'ADD_DESTINATION' })}
+            >
               <Plus className="mr-1 h-3 w-3" />
               Add Destination
             </Button>
@@ -483,28 +348,14 @@ export function DcrFormEditor() {
             <AccordionTrigger className="flex flex-1 items-center gap-2 text-sm font-semibold">
               <span>Data Flows</span>
             </AccordionTrigger>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted"
-                  tabIndex={-1}
-                >
-                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
-                  <span className="sr-only">
-                    Data flows section information
-                  </span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                Connects input streams to destinations. Optionally applies KQL
-                transformations to data before ingestion
-              </TooltipContent>
-            </Tooltip>
+            <HelpTooltip
+              content="Connects input streams to destinations. Optionally applies KQL transformations to data before ingestion"
+              srLabel="Data flows section information"
+            />
           </div>
           <AccordionContent className="mt-3 space-y-3">
             {dataFlows.map((flow, i) => (
-              <div key={i} className="space-y-2 rounded-md border p-3">
+              <div key={flow.id} className="space-y-2 rounded-md border p-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-muted-foreground">
                     Flow {i + 1}
@@ -512,7 +363,9 @@ export function DcrFormEditor() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => removeDataFlow(i)}
+                    onClick={() =>
+                      dispatch({ type: 'REMOVE_DATA_FLOW', payload: i })
+                    }
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -526,7 +379,13 @@ export function DcrFormEditor() {
                   <Textarea
                     value={flow.transformKql}
                     onChange={(e) =>
-                      updateDataFlow(i, { transformKql: e.target.value })
+                      dispatch({
+                        type: 'UPDATE_DATA_FLOW',
+                        payload: {
+                          index: i,
+                          patch: { transformKql: e.target.value },
+                        },
+                      })
                     }
                     placeholder="source"
                     rows={2}
@@ -541,14 +400,24 @@ export function DcrFormEditor() {
                   <Input
                     value={flow.outputStream}
                     onChange={(e) =>
-                      updateDataFlow(i, { outputStream: e.target.value })
+                      dispatch({
+                        type: 'UPDATE_DATA_FLOW',
+                        payload: {
+                          index: i,
+                          patch: { outputStream: e.target.value },
+                        },
+                      })
                     }
                     placeholder="Custom-MyTable_CL or Microsoft-TableName"
                   />
                 </div>
               </div>
             ))}
-            <Button variant="outline" size="sm" onClick={addDataFlow}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => dispatch({ type: 'ADD_DATA_FLOW' })}
+            >
               <Plus className="mr-1 h-3 w-3" />
               Add Data Flow
             </Button>
@@ -562,9 +431,9 @@ export function DcrFormEditor() {
               <span>Validation Issues ({validationErrors.length})</span>
             </AccordionTrigger>
             <AccordionContent className="mt-3 space-y-2">
-              {validationErrors.map((err, i) => (
+              {validationErrors.map((err) => (
                 <Alert
-                  key={i}
+                  key={`${err.field}-${err.message}`}
                   variant={err.severity === 'error' ? 'destructive' : 'default'}
                 >
                   {err.severity === 'error' ? (

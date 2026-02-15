@@ -1,91 +1,135 @@
-import type { DcrFormData, ValidationError } from '@/types/dcr'
-import { createDefaultFormData } from '@/lib/dcr-utils'
+import type {
+  DcrColumn,
+  DcrDataFlow,
+  DcrFormData,
+  ValidationError,
+} from '@/types/dcr'
+import { createDefaultFormData, inferColumnsFromJson } from '@/lib/dcr-utils'
 
 export type SourceOrigin = 'local' | 'fetched'
 export type ActiveTab = 'form' | 'json'
 export type MobileSection = 'source' | 'editor'
 
 export interface DcrState {
-  sessionId: string
   sourceJson: string
   sourceOrigin: SourceOrigin
   sourceFetchedAt: string | null
   activeTab: ActiveTab
   dcrForm: DcrFormData
   generatedJson: string
-  shareId: string
-  shareUrl: string
+  shareId: string | null
+  shareUrl: string | null
   validationErrors: Array<ValidationError>
-  isDirty: boolean
   isFetching: boolean
-  fetchError: string | null
   mobileSection: MobileSection
 }
 
 export type DcrAction =
   | { type: 'SET_SOURCE_JSON'; payload: string }
-  | { type: 'SET_SOURCE_FETCHED'; payload: { json: string; fetchedAt: string } }
+  | {
+      type: 'SET_SOURCE_FETCHED'
+      payload: { json: string; fetchedAt: string }
+    }
   | { type: 'CLEAR_SOURCE' }
   | { type: 'SET_ACTIVE_TAB'; payload: ActiveTab }
   | { type: 'UPDATE_DCR_FORM'; payload: Partial<DcrFormData> }
+  | { type: 'SET_STREAM_NAME'; payload: string }
+  | { type: 'SET_COLUMNS'; payload: Array<DcrColumn> }
+  | { type: 'ADD_DESTINATION' }
+  | { type: 'REMOVE_DESTINATION'; payload: number }
+  | {
+      type: 'UPDATE_DESTINATION'
+      payload: {
+        index: number
+        field: 'workspaceResourceId' | 'name'
+        value: string
+      }
+    }
+  | { type: 'ADD_DATA_FLOW' }
+  | { type: 'REMOVE_DATA_FLOW'; payload: number }
+  | { type: 'UPDATE_DATA_FLOW'; payload: { index: number; patch: Partial<DcrDataFlow> } }
   | { type: 'SET_GENERATED_JSON'; payload: string }
   | { type: 'SET_SHARE_DATA'; payload: { id: string; url: string } }
   | { type: 'SET_VALIDATION_ERRORS'; payload: Array<ValidationError> }
   | { type: 'SET_FETCHING'; payload: boolean }
-  | { type: 'SET_FETCH_ERROR'; payload: string | null }
   | { type: 'SET_MOBILE_SECTION'; payload: MobileSection }
   | { type: 'RESET_SESSION' }
 
-function createSessionId() {
-  if (typeof globalThis.crypto.randomUUID === 'function') {
-    return globalThis.crypto.randomUUID()
+function getStreamName(state: DcrState): string {
+  return Object.keys(state.dcrForm.streamDeclarations)[0] || 'Custom-MyStream'
+}
+
+function getColumns(state: DcrState): Array<DcrColumn> {
+  const name = getStreamName(state)
+  return (
+    (state.dcrForm.streamDeclarations[name] as
+      | { columns: Array<DcrColumn> }
+      | undefined)?.columns ?? []
+  )
+}
+
+function inferAndSetColumns(state: DcrState, jsonString: string): DcrState {
+  if (!jsonString.trim()) return state
+  try {
+    const parsed = JSON.parse(jsonString)
+    const inferred = inferColumnsFromJson(parsed)
+    if (inferred.length > 0) {
+      const streamName = getStreamName(state)
+      return {
+        ...state,
+        dcrForm: {
+          ...state.dcrForm,
+          streamDeclarations: {
+            [streamName]: { columns: inferred },
+          },
+        },
+      }
+    }
+  } catch {
+    // Invalid JSON — skip inference
   }
-  return `session-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+  return state
 }
 
 export const initialState: DcrState = {
-  sessionId: createSessionId(),
   sourceJson: '',
   sourceOrigin: 'local',
   sourceFetchedAt: null,
   activeTab: 'form',
   dcrForm: createDefaultFormData(),
   generatedJson: '',
-  shareId: '',
-  shareUrl: '',
+  shareId: null,
+  shareUrl: null,
   validationErrors: [],
-  isDirty: false,
   isFetching: false,
-  fetchError: null,
   mobileSection: 'source',
 }
 
 export function dcrReducer(state: DcrState, action: DcrAction): DcrState {
   switch (action.type) {
-    case 'SET_SOURCE_JSON':
-      return {
+    case 'SET_SOURCE_JSON': {
+      const next = {
         ...state,
         sourceJson: action.payload,
-        sourceOrigin: 'local',
-        isDirty: true,
+        sourceOrigin: 'local' as const,
       }
-    case 'SET_SOURCE_FETCHED':
-      return {
+      return inferAndSetColumns(next, action.payload)
+    }
+    case 'SET_SOURCE_FETCHED': {
+      const next = {
         ...state,
         sourceJson: action.payload.json,
-        sourceOrigin: 'fetched',
+        sourceOrigin: 'fetched' as const,
         sourceFetchedAt: action.payload.fetchedAt,
-        isDirty: true,
-        fetchError: null,
       }
+      return inferAndSetColumns(next, action.payload.json)
+    }
     case 'CLEAR_SOURCE':
       return {
         ...state,
         sourceJson: '',
         sourceOrigin: 'local',
         sourceFetchedAt: null,
-        isDirty: false,
-        fetchError: null,
       }
     case 'SET_ACTIVE_TAB':
       return { ...state, activeTab: action.payload }
@@ -93,8 +137,119 @@ export function dcrReducer(state: DcrState, action: DcrAction): DcrState {
       return {
         ...state,
         dcrForm: { ...state.dcrForm, ...action.payload },
-        isDirty: true,
       }
+    case 'SET_STREAM_NAME': {
+      const prefixed = action.payload.startsWith('Custom-')
+        ? action.payload
+        : `Custom-${action.payload}`
+      const currentColumns = getColumns(state)
+      return {
+        ...state,
+        dcrForm: {
+          ...state.dcrForm,
+          streamDeclarations: {
+            [prefixed]: { columns: currentColumns },
+          },
+        },
+      }
+    }
+    case 'SET_COLUMNS': {
+      const streamName = getStreamName(state)
+      return {
+        ...state,
+        dcrForm: {
+          ...state.dcrForm,
+          streamDeclarations: {
+            [streamName]: { columns: action.payload },
+          },
+        },
+      }
+    }
+    case 'ADD_DESTINATION':
+      return {
+        ...state,
+        dcrForm: {
+          ...state.dcrForm,
+          destinations: {
+            logAnalytics: [
+              ...state.dcrForm.destinations.logAnalytics,
+              {
+                id: crypto.randomUUID(),
+                workspaceResourceId: '',
+                name: '',
+              },
+            ],
+          },
+        },
+      }
+    case 'REMOVE_DESTINATION':
+      return {
+        ...state,
+        dcrForm: {
+          ...state.dcrForm,
+          destinations: {
+            logAnalytics: state.dcrForm.destinations.logAnalytics.filter(
+              (_, i) => i !== action.payload,
+            ),
+          },
+        },
+      }
+    case 'UPDATE_DESTINATION': {
+      const { index, field, value } = action.payload
+      return {
+        ...state,
+        dcrForm: {
+          ...state.dcrForm,
+          destinations: {
+            logAnalytics: state.dcrForm.destinations.logAnalytics.map(
+              (d, i) => (i === index ? { ...d, [field]: value } : d),
+            ),
+          },
+        },
+      }
+    }
+    case 'ADD_DATA_FLOW': {
+      const streamName = getStreamName(state)
+      const dests = state.dcrForm.destinations.logAnalytics
+      return {
+        ...state,
+        dcrForm: {
+          ...state.dcrForm,
+          dataFlows: [
+            ...state.dcrForm.dataFlows,
+            {
+              id: crypto.randomUUID(),
+              streams: [streamName],
+              destinations: dests.length > 0 ? [dests[0].name] : [],
+              transformKql: 'source',
+              outputStream: '',
+            },
+          ],
+        },
+      }
+    }
+    case 'REMOVE_DATA_FLOW':
+      return {
+        ...state,
+        dcrForm: {
+          ...state.dcrForm,
+          dataFlows: state.dcrForm.dataFlows.filter(
+            (_, i) => i !== action.payload,
+          ),
+        },
+      }
+    case 'UPDATE_DATA_FLOW': {
+      const { index: flowIndex, patch } = action.payload
+      return {
+        ...state,
+        dcrForm: {
+          ...state.dcrForm,
+          dataFlows: state.dcrForm.dataFlows.map((f, i) =>
+            i === flowIndex ? { ...f, ...patch } : f,
+          ),
+        },
+      }
+    }
     case 'SET_GENERATED_JSON':
       return { ...state, generatedJson: action.payload }
     case 'SET_SHARE_DATA':
@@ -107,14 +262,9 @@ export function dcrReducer(state: DcrState, action: DcrAction): DcrState {
       return { ...state, validationErrors: action.payload }
     case 'SET_FETCHING':
       return { ...state, isFetching: action.payload }
-    case 'SET_FETCH_ERROR':
-      return { ...state, fetchError: action.payload }
     case 'SET_MOBILE_SECTION':
       return { ...state, mobileSection: action.payload }
     case 'RESET_SESSION':
-      return {
-        ...initialState,
-        sessionId: createSessionId(),
-      }
+      return { ...initialState }
   }
 }
