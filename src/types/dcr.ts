@@ -19,7 +19,9 @@ export interface DcrStreamDeclaration {
 
 export interface DcrLogAnalyticsDestination {
   id: string
-  workspaceResourceId: string
+  subscriptionId: string
+  resourceGroupName: string
+  workspaceName: string
   name: string
 }
 

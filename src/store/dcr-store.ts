@@ -41,13 +41,16 @@ export type DcrAction =
       type: 'UPDATE_DESTINATION'
       payload: {
         index: number
-        field: 'workspaceResourceId' | 'name'
+        field: 'subscriptionId' | 'resourceGroupName' | 'workspaceName' | 'name'
         value: string
       }
     }
   | { type: 'ADD_DATA_FLOW' }
   | { type: 'REMOVE_DATA_FLOW'; payload: number }
-  | { type: 'UPDATE_DATA_FLOW'; payload: { index: number; patch: Partial<DcrDataFlow> } }
+  | {
+      type: 'UPDATE_DATA_FLOW'
+      payload: { index: number; patch: Partial<DcrDataFlow> }
+    }
   | { type: 'SET_GENERATED_JSON'; payload: string }
   | { type: 'SET_SHARE_DATA'; payload: { id: string; url: string } }
   | { type: 'SET_VALIDATION_ERRORS'; payload: Array<ValidationError> }
@@ -175,7 +178,9 @@ export function dcrReducer(state: DcrState, action: DcrAction): DcrState {
               ...state.dcrForm.destinations.logAnalytics,
               {
                 id: crypto.randomUUID(),
-                workspaceResourceId: '',
+                subscriptionId: '',
+                resourceGroupName: '',
+                workspaceName: '',
                 name: '',
               },
             ],

@@ -147,8 +147,9 @@ describe('DCR Builder E2E Workflows', () => {
       destinations: {
         logAnalytics: [
           {
-            workspaceResourceId:
-              '/subscriptions/12345/resourcegroups/rg/providers/microsoft.operationalinsights/workspaces/ws',
+            subscriptionId: '00000000-0000-0000-0000-000000000000',
+            resourceGroupName: 'rg',
+            workspaceName: 'ws',
             name: 'MyWorkspace',
           },
         ],
@@ -195,13 +196,15 @@ describe('DCR Builder E2E Workflows', () => {
       )
     })
 
-    it('should validate workspace resource ID format', () => {
+    it('should validate subscription ID format', () => {
       const invalidDest = {
         ...validFormData,
         destinations: {
           logAnalytics: [
             {
-              workspaceResourceId: '/invalid/path',
+              subscriptionId: 'not-a-guid',
+              resourceGroupName: 'rg',
+              workspaceName: 'ws',
               name: 'InvalidWorkspace',
             },
           ],
@@ -254,7 +257,9 @@ describe('DCR Builder E2E Workflows', () => {
         destinations: {
           logAnalytics: [
             {
-              workspaceResourceId: '/subscriptions/test/path',
+              subscriptionId: '00000000-0000-0000-0000-000000000000',
+              resourceGroupName: 'rg',
+              workspaceName: 'ws',
               name: 'TestWs',
             },
           ],
@@ -314,8 +319,9 @@ describe('DCR Builder E2E Workflows', () => {
         destinations: {
           logAnalytics: [
             {
-              workspaceResourceId:
-                '/subscriptions/12345/resourcegroups/rg/providers/microsoft.operationalinsights/workspaces/ws',
+              subscriptionId: '00000000-0000-0000-0000-000000000000',
+              resourceGroupName: 'rg',
+              workspaceName: 'ws',
               name: 'LogsWorkspace',
             },
           ],
@@ -324,8 +330,7 @@ describe('DCR Builder E2E Workflows', () => {
           {
             streams: ['Custom-Logs'],
             destinations: ['LogsWorkspace'],
-            transformKql:
-              'source | where severity == "error"',
+            transformKql: 'source | where severity == "error"',
             outputStream: 'Custom-Logs_CL',
           },
         ],

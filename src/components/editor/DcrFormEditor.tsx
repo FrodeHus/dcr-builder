@@ -289,23 +289,65 @@ export function DcrFormEditor() {
                 </div>
                 <div className="space-y-1.5">
                   <TooltipLabel
-                    label="Workspace Resource ID"
-                    tooltip={dcrTooltips.workspaceResourceId}
+                    label="Subscription ID"
+                    tooltip={dcrTooltips.subscriptionId}
                     required
                   />
                   <Input
-                    value={dest.workspaceResourceId}
+                    value={dest.subscriptionId}
                     onChange={(e) =>
                       dispatch({
                         type: 'UPDATE_DESTINATION',
                         payload: {
                           index: i,
-                          field: 'workspaceResourceId',
+                          field: 'subscriptionId',
                           value: e.target.value,
                         },
                       })
                     }
-                    placeholder="/subscriptions/.../workspaces/..."
+                    placeholder="00000000-0000-0000-0000-000000000000"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <TooltipLabel
+                    label="Resource Group Name"
+                    tooltip={dcrTooltips.resourceGroupName}
+                    required
+                  />
+                  <Input
+                    value={dest.resourceGroupName}
+                    onChange={(e) =>
+                      dispatch({
+                        type: 'UPDATE_DESTINATION',
+                        payload: {
+                          index: i,
+                          field: 'resourceGroupName',
+                          value: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="my-resource-group"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <TooltipLabel
+                    label="Workspace Name"
+                    tooltip={dcrTooltips.workspaceName}
+                    required
+                  />
+                  <Input
+                    value={dest.workspaceName}
+                    onChange={(e) =>
+                      dispatch({
+                        type: 'UPDATE_DESTINATION',
+                        payload: {
+                          index: i,
+                          field: 'workspaceName',
+                          value: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="my-log-workspace"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -413,17 +455,23 @@ export function DcrFormEditor() {
                       if (!value) return
 
                       let formatted = value
-                      
+
                       // Add prefix if not already present
-                      if (!formatted.startsWith('Custom-') && !formatted.startsWith('Microsoft-')) {
+                      if (
+                        !formatted.startsWith('Custom-') &&
+                        !formatted.startsWith('Microsoft-')
+                      ) {
                         formatted = `Custom-${formatted}`
                       }
-                      
+
                       // Add suffix if it's a Custom table and doesn't already have it
-                      if (formatted.startsWith('Custom-') && !formatted.endsWith('_CL')) {
+                      if (
+                        formatted.startsWith('Custom-') &&
+                        !formatted.endsWith('_CL')
+                      ) {
                         formatted = `${formatted}_CL`
                       }
-                      
+
                       // Update if changed
                       if (formatted !== value) {
                         dispatch({

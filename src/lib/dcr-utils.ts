@@ -152,6 +152,13 @@ export function parseJsonSafely(jsonString: string): unknown {
 }
 
 export function generateDcr(formData: DcrFormData): object {
+  const buildWorkspaceResourceId = (
+    subscriptionId: string,
+    resourceGroupName: string,
+    workspaceName: string,
+  ) =>
+    `/subscriptions/${subscriptionId}/resourcegroups/${resourceGroupName}/providers/microsoft.operationalinsights/workspaces/${workspaceName}`
+
   const streamDeclarations: Record<
     string,
     { columns: Array<{ name: string; type: DcrColumnType }> }
@@ -165,8 +172,12 @@ export function generateDcr(formData: DcrFormData): object {
   }
 
   const logAnalytics = formData.destinations.logAnalytics.map(
-    ({ workspaceResourceId, name: destName }) => ({
-      workspaceResourceId,
+    ({ subscriptionId, resourceGroupName, workspaceName, name: destName }) => ({
+      workspaceResourceId: buildWorkspaceResourceId(
+        subscriptionId,
+        resourceGroupName,
+        workspaceName,
+      ),
       name: destName,
     }),
   )
@@ -275,22 +286,28 @@ export function validateDcr(formData: DcrFormData): Array<ValidationError> {
   }
 
   for (const dest of formData.destinations.logAnalytics) {
-    if (!dest.workspaceResourceId.trim()) {
+    const subscriptionId = dest.subscriptionId.trim()
+    const resourceGroupName = dest.resourceGroupName.trim()
+    const workspaceName = dest.workspaceName.trim()
+
+    if (!subscriptionId || !resourceGroupName || !workspaceName) {
       errors.push({
         field: 'destinations',
         message:
-          'Workspace Resource ID is required. Format: /subscriptions/{id}/resourcegroups/{name}/providers/microsoft.operationalinsights/workspaces/{workspace}',
+          'Subscription ID, resource group name, and workspace name are required for Log Analytics destinations.',
         severity: 'error',
       })
-    } else if (
-      !dest.workspaceResourceId.includes(
-        'microsoft.operationalinsights/workspaces',
+    }
+
+    if (
+      subscriptionId &&
+      !/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+        subscriptionId,
       )
     ) {
       errors.push({
         field: 'destinations',
-        message:
-          'Invalid Workspace Resource ID format. Must include "microsoft.operationalinsights/workspaces"',
+        message: 'Subscription ID must be a valid GUID.',
         severity: 'warning',
       })
     }
