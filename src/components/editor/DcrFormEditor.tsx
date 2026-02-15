@@ -114,6 +114,23 @@ export function DcrFormEditor() {
                 placeholder="Optional description"
               />
             </div>
+            <div className="space-y-1.5">
+              <TooltipLabel
+                label="Data Collection Endpoint"
+                tooltip={dcrTooltips.dataCollectionEndpointId}
+              />
+              <Input
+                id="dcr-dce-id"
+                value={dcrForm.dataCollectionEndpointId}
+                onChange={(e) =>
+                  dispatch({
+                    type: 'UPDATE_DCR_FORM',
+                    payload: { dataCollectionEndpointId: e.target.value },
+                  })
+                }
+                placeholder="Leave empty to create automatically"
+              />
+            </div>
           </AccordionContent>
         </AccordionItem>
 

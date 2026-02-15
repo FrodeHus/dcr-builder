@@ -11,6 +11,8 @@ export const dcrTooltips = {
     'Azure region where the DCR will be created (e.g., eastus, westeurope). Must match your resource group location.',
   description:
     'Optional description to document the purpose and details of this Data Collection Rule for future reference.',
+  dataCollectionEndpointId:
+    'Resource ID of the Data Collection Endpoint (DCE). Required when using Private Link or a custom endpoint. Format: /subscriptions/{subId}/resourceGroups/{rg}/providers/Microsoft.Insights/dataCollectionEndpoints/{name}. Leave empty to let Azure create one automatically.',
 
   // Stream Declaration section
   streamName:

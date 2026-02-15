@@ -196,6 +196,11 @@ export function generateDcr(formData: DcrFormData): object {
     kind: 'Direct',
     properties: {
       ...(formData.description ? { description: formData.description } : {}),
+      ...(formData.dataCollectionEndpointId
+        ? {
+            dataCollectionEndpointId: formData.dataCollectionEndpointId,
+          }
+        : {}),
       streamDeclarations,
       destinations: { logAnalytics },
       dataFlows,
