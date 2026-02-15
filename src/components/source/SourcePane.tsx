@@ -17,16 +17,25 @@ export function SourcePane() {
       </PaneStickyHeader>
       <FetchControls />
       <div className="flex-1 overflow-auto p-4">
-        {!sourceJson?.trim() ? (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="max-w-sm space-y-3 text-muted-foreground">
-              <p className="text-sm font-medium">No JSON data yet</p>
-              <p className="text-xs">Paste your JSON sample directly, or use the controls above to fetch from an API endpoint. The columns will be automatically detected.</p>
-              <p className="text-xs font-medium text-foreground pt-2">Supported formats:</p>
-              <code className="inline-block bg-muted p-2 rounded text-[11px] text-left">{`{\n  "field1": "text",\n  "field2": 123\n}`}</code>
+        <div className="relative">
+          {!sourceJson?.trim() && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none z-10">
+              <div className="max-w-sm space-y-3 text-muted-foreground">
+                <p className="text-sm font-medium">No JSON data yet</p>
+                <p className="text-xs">
+                  Paste your JSON sample directly, or use the controls above to
+                  fetch from an API endpoint. The columns will be automatically
+                  detected.
+                </p>
+                <p className="text-xs font-medium text-foreground pt-2">
+                  Supported formats:
+                </p>
+                <code className="inline-block bg-muted p-2 rounded text-[11px] text-left">
+                  {`{\n  "field1": "text",\n  "field2": 123\n}`}
+                </code>
+              </div>
             </div>
-          </div>
-        ) : (
+          )}
           <JsonEditor
             value={sourceJson}
             onChange={(val) =>
@@ -34,7 +43,7 @@ export function SourcePane() {
             }
             placeholder="Paste JSON here or fetch from an API endpoint above..."
           />
-        )}
+        </div>
       </div>
       <SourceFooter />
     </PanePanel>
