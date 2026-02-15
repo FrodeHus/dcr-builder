@@ -2,6 +2,7 @@ import { Copy, Download, WrapText } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { useDcrDispatch, useDcrState } from '@/store/dcr-context'
+import { parseJsonSafely } from '@/lib/dcr-utils'
 
 export function SourceFooter() {
   const { sourceJson } = useDcrState()
@@ -9,14 +10,16 @@ export function SourceFooter() {
 
   const handleFormat = () => {
     try {
-      const parsed = JSON.parse(sourceJson)
+      const parsed = parseJsonSafely(sourceJson)
       dispatch({
         type: 'SET_SOURCE_JSON',
         payload: JSON.stringify(parsed, null, 2),
       })
-      toast.success('JSON formatted')
-    } catch {
-      toast.error('Invalid JSON — cannot format')
+      toast.success('JSON formatted successfully')
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Invalid JSON format'
+      toast.error(message)
     }
   }
 

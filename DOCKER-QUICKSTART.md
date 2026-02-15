@@ -44,29 +44,43 @@ docker-compose down
 ### 1. Prerequisites
 
 - Domain name pointing to your server
-- Update `example.com` in `Caddyfile` with your actual domain
+- Docker and Docker Compose installed
 
 ### 2. Configure Environment
 
-Create or update `.env.docker`:
+Copy the template and customize for production:
 ```bash
-cp .env.docker .env.docker.local
-# Edit .env.docker.local with your production settings
+cp .env.example .env.docker
+```
+
+Edit `.env.docker` and update these values for production:
+```env
+NODE_ENV=production
+APP_PORT_HOST=127.0.0.1       # Internal only (Traefik handles external)
+APP_HOST=your-domain.com       # Your domain name
+TRAEFIK_ENABLED=true           # Enable reverse proxy
+LETSENCRYPT_EMAIL=your@email   # For Let's Encrypt certificates
+RESOURCES_CPU_LIMIT=1          # Conservative for production
+RESOURCES_MEMORY_LIMIT=512M    # Conservative for production
+LOG_MAX_FILE=5                 # Keep more logs in production
 ```
 
 ### 3. Build and Run
 
 ```bash
-docker-compose -f docker-compose.prod.yml build
-docker-compose -f docker-compose.prod.yml up -d
+docker-compose build
+docker-compose --profile prod up -d
 ```
 
 ### 4. Verify Health
 
 ```bash
-docker-compose -f docker-compose.prod.yml ps
-docker-compose -f docker-compose.prod.yml logs app
+docker-compose ps
+docker-compose logs app
+docker-compose logs traefik
 ```
+
+The application is now running behind Traefik with automatic HTTPS configured for your domain.
 
 ## Security Scanning
 
@@ -170,14 +184,22 @@ Adjust CPU limits accordingly.
 
 ## Environment Variables
 
-Edit `.env.docker` to customize:
+All environment variables are documented in [.env.example](.env.example).
 
-```env
-NODE_ENV=production      # Always production
-LOG_LEVEL=info          # debug, info, warn, error
-PORT=3000              # Application port
-HOST=0.0.0.0          # Bind address
+Copy to `.env.docker` and customize:
+
+```bash
+cp .env.example .env.docker
 ```
+
+Key variables:
+- `NODE_ENV=production` - Set to production for production deployments
+- `APP_PORT_HOST` - Port binding (3000 for dev, 127.0.0.1 for prod)
+- `APP_HOST` - Hostname (localhost for dev, your-domain for prod)
+- `TRAEFIK_ENABLED` - Enable reverse proxy (false for dev, true for prod)
+- `LETSENCRYPT_EMAIL` - Your email for Let's Encrypt certificates (prod only)
+- `RESOURCES_CPU_LIMIT/MEMORY_LIMIT` - Resource constraints
+- `LOG_MAX_FILE` - Number of log files to retain
 
 ## Production Best Practices
 
@@ -190,8 +212,11 @@ docker tag dcr-builder:latest myregistry.azurecr.io/dcr-builder:1.0.0
 # Push to registry
 docker push myregistry.azurecr.io/dcr-builder:1.0.0
 
-# Use in compose file
-docker-compose.prod.yml: image: myregistry.azurecr.io/dcr-builder:1.0.0
+# Reference in docker-compose.yml:
+# In the 'app' service, change:
+# image: dcr-builder:latest
+# to:
+# image: myregistry.azurecr.io/dcr-builder:1.0.0
 ```
 
 ### 2. Scan for Vulnerabilities
@@ -264,15 +289,19 @@ volumes:
 # Initialize swarm
 docker swarm init
 
-# Deploy stack
-docker stack deploy -c docker-compose.prod.yml dcr-builder
+# Deploy stack (uses docker-compose.yml with prod profile)
+docker stack deploy -c docker-compose.yml dcr-builder
 ```
 
 ### Kubernetes
 
 Convert using Kompose:
 ```bash
-kompose convert -f docker-compose.prod.yml
+# Generate dev deployment manifests
+kompose convert -f docker-compose.yml
+
+# Or for production with profiles
+kompose convert -f docker-compose.yml --profile prod
 kubectl apply -f *.yaml
 ```
 

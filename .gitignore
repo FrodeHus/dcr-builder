@@ -14,9 +14,7 @@ dist-ssr
 # Environment & secrets
 .env
 .env.*
-!.env.example
-!.env.docker  # Docker environment template - can be ignored if using secrets management
-.env.docker.local  # Local Docker env overrides
+!.env.example  # Template for all environments - copy to .env.docker and customize
 
 # Editor & OS
 .DS_Store

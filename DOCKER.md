@@ -94,26 +94,46 @@ The application will be available at `http://localhost:3000`
 ## Configuration
 
 ### Environment Variables
-Edit `.env.docker` to customize the deployment:
 
+All environment variables are documented in [.env.example](.env.example). Copy this file to `.env.docker` and customize:
+
+```bash
+cp .env.example .env.docker
+```
+
+Key variables for development:
 ```env
-NODE_ENV=production          # Always production in Docker
-LOG_LEVEL=info              # Log level (debug, info, warn, error)
-PORT=3000                   # Application port
-HOST=0.0.0.0               # Bind to all interfaces in container
+NODE_ENV=development
+APP_PORT_HOST=3000          # Direct access to port 3000
+APP_HOST=localhost
+TRAEFIK_ENABLED=false       # Traefik disabled for dev
+RESOURCES_CPU_LIMIT=2
+RESOURCES_MEMORY_LIMIT=1G
 ```
 
-### Port Mapping
-The docker-compose.yml exposes port 3000 on the host:
-```yaml
-ports:
-  - "3000:3000"  # Maps host:container
+Key variables for production:
+```env
+NODE_ENV=production
+APP_PORT_HOST=127.0.0.1     # Internal only (Traefik handles external)
+APP_HOST=your-domain.com    # Your domain name
+TRAEFIK_ENABLED=true        # Traefik reverse proxy enabled
+LETSENCRYPT_EMAIL=your@email # For Let's Encrypt certificates
+RESOURCES_CPU_LIMIT=1
+RESOURCES_MEMORY_LIMIT=512M
 ```
 
-To use a different port on your host:
-```yaml
-ports:
-  - "8080:3000"  # Access at http://localhost:8080
+### Service Configuration
+
+For development, the application is accessed directly:
+```bash
+docker-compose up -d
+# Access at http://localhost:3000
+```
+
+For production, use Traefik reverse proxy with HTTPS:
+```bash
+docker-compose --profile prod up -d
+# Access at https://your-domain.com (automatic Let's Encrypt certificate)
 ```
 
 ## Deployment Recommendations

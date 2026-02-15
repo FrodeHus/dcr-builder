@@ -151,14 +151,6 @@ else
     echo -e "${RED}✗ docker-compose.yml validation failed${NC}"
 fi
 
-echo ""
-echo -e "${BLUE}Validating docker-compose.prod.yml...${NC}"
-if docker-compose -f docker-compose.prod.yml config > /dev/null 2>&1; then
-    echo -e "${GREEN}✓ docker-compose.prod.yml is valid${NC}"
-else
-    echo -e "${RED}✗ docker-compose.prod.yml validation failed${NC}"
-fi
-
 # Security checklist
 echo ""
 echo -e "${BLUE}================================================${NC}"

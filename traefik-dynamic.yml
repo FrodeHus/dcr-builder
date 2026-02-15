@@ -1,0 +1,39 @@
+# Traefik Dynamic Configuration
+# Defines middlewares and other dynamic configuration
+
+http:
+  # Global security headers middleware
+  middlewares:
+    # HTTP to HTTPS redirect
+    redirect:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+    # Security headers for all services
+    security-headers:
+      headers:
+        accessControlAllowOriginList:
+          - "https://dcr.reothor.no"
+        accessControlMaxAge: 100
+        addVaryHeader: true
+        # HSTS - Strict Transport Security (1 year)
+        stsSeconds: 63072000
+        stsIncludeSubdomains: true
+        stsPreload: true
+        # Prevent MIME type sniffing
+        contentTypeNosniff: true
+        # XSS Protection for older browsers
+        browserXssFilter: true
+        # Frame options
+        contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'"
+        referrerPolicy: "strict-origin-when-cross-origin"
+
+  # Optional: Add more routes here if needed
+  routers:
+    # Can be extended with additional routers if needed
+    {}
+
+  # Services will be auto-discovered from Docker labels
+  services:
+    {}

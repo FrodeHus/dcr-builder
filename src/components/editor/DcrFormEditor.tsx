@@ -109,8 +109,14 @@ export function DcrFormEditor() {
       if (inferred.length > 0) {
         setColumns(inferred)
       }
-    } catch {
-      // invalid JSON, skip inference
+    } catch (error) {
+      // Invalid JSON or inference error - log for debugging
+      if (process.env.NODE_ENV === 'development') {
+        console.debug(
+          'Column inference skipped:',
+          error instanceof Error ? error.message : 'Unknown error',
+        )
+      }
     }
   }, [sourceJson, setColumns])
 
