@@ -4,6 +4,12 @@
 
 A web-based tool for generating [Azure Data Collection Rules (DCRs)](https://learn.microsoft.com/en-us/azure/azure-monitor/data-collection/data-collection-rule-create-edit) from JSON schemas.
 
+![Screenshot of DCR Builder](images/dcr-editor.png)
+
+Generates JSON, ARM templates, and Bicep code for DCRs with proper schema mapping and validation.
+
+![Screenshot of JSON output](images/output.png)
+
 ## About
 
 Data Collection Rule Builder simplifies the creation of Data Collection Rules for Azure Monitor. Instead of manually writing JSON configurations, you can:
@@ -13,7 +19,7 @@ Data Collection Rule Builder simplifies the creation of Data Collection Rules fo
 - **Automatically generate** valid DCR configurations with proper schema mappings
 - **Deploy directly** to Azure using CLI, PowerShell, or ARM templates
 
-The application intelligently analyzes your JSON structure and infers appropriate column types (string, int, long, real, boolean, dynamic, datetime) for your DCR stream declarations.
+The application analyzes your JSON structure and infers appropriate column types (string, int, long, real, boolean, dynamic, datetime) for your DCR stream declarations.
 
 **Perfect for:**
 

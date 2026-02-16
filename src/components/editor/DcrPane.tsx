@@ -79,7 +79,7 @@ export function DcrPane() {
           <DcrFormEditor />
         </TabsContent>
 
-        <TabsContent value="json" className="flex min-h-0 flex-1 flex-col mt-0">
+        <TabsContent value="json" className="flex min-h-0 flex-1 flex-col overflow-hidden mt-0">
           <DcrJsonViewer />
         </TabsContent>
       </Tabs>
