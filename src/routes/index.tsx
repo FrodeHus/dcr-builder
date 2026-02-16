@@ -12,7 +12,7 @@ export const Route = createFileRoute('/')({ component: App })
 function App() {
   return (
     <DcrProvider>
-      <div className="flex h-screen flex-col bg-background">
+      <div className="flex h-screen flex-col overflow-hidden bg-background">
         <TopBar />
         <MobileSectionToggle />
         <BuilderLayout leftPane={<SourcePane />} rightPane={<DcrPane />} />

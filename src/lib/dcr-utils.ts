@@ -183,12 +183,34 @@ export function generateDcr(formData: DcrFormData): object {
   )
 
   const dataFlows = formData.dataFlows.map(
-    ({ streams, destinations: flowDests, transformKql, outputStream }) => ({
-      streams,
-      destinations: flowDests,
-      transformKql,
-      outputStream,
-    }),
+    ({ streams, destinations: flowDests, transformKql, outputStream }) => {
+      const autoFragment = ' | extend TimeGenerated=now()'
+      // Strip any previously auto-appended fragment
+      let kql = transformKql.endsWith(autoFragment)
+        ? transformKql.slice(0, -autoFragment.length)
+        : transformKql
+
+      const allColumns = streams.flatMap(
+        (streamKey) =>
+          (streamKey in formData.streamDeclarations
+            ? formData.streamDeclarations[streamKey].columns
+            : []),
+      )
+      const hasTimeGenerated = allColumns.some(
+        (col) => col.name === 'TimeGenerated',
+      )
+
+      if (!hasTimeGenerated && !kql.includes('TimeGenerated')) {
+        kql = kql.trimEnd() + autoFragment
+      }
+
+      return {
+        streams,
+        destinations: flowDests,
+        transformKql: kql,
+        outputStream,
+      }
+    },
   )
 
   return {

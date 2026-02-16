@@ -6,34 +6,35 @@
 
 export const dcrTooltips = {
   // Basics section
-  name: 'Unique identifier for this Data Collection Rule. Used to reference the DCR when creating or updating it.',
+  name: 'Unique identifier for this Data Collection Rule within your resource group.',
   location:
-    'Azure region where the DCR will be created (e.g., eastus, westeurope). Must match your resource group location.',
+    'Azure region where the DCR will be deployed (e.g., "eastus", "westeurope"). Should match the region of your monitored resources.',
   description:
-    'Optional description to document the purpose and details of this Data Collection Rule for future reference.',
+    'Optional user-defined description of the Data Collection Rule.',
   dataCollectionEndpointId:
-    'Resource ID of the Data Collection Endpoint (DCE). Required when using Private Link or a custom endpoint. Format: /subscriptions/{subId}/resourceGroups/{rg}/providers/Microsoft.Insights/dataCollectionEndpoints/{name}. Leave empty to let Azure create one automatically.',
+    'Resource ID of the Data Collection Endpoint (DCE). For DCRs with kind "Direct", an endpoint is created automatically if not specified. Required when using Private Link.',
 
   // Stream Declaration section
   streamName:
-    'Name of the input stream that receives data. Must start with "Custom-" for custom streams. Used in Data Flows to reference this stream.',
+    'Identifies the input stream. Must begin with "Custom-". The stream defines the schema of incoming JSON data sent via the Logs Ingestion API.',
   columnName:
-    'The name of the property in your incoming JSON data that maps to this column.',
+    'Top-level property name in your incoming JSON. The shape of the data you send does not need to match the destination table — the transform output must match instead.',
   columnType:
-    'The data type for this column. Maps JSON types: string→string, number→real/int/long, boolean→boolean, object/array→dynamic, ISO dates→datetime.',
+    'DCR data type for this column. Valid types: string, int, long, real, boolean, dynamic (objects/arrays), datetime (ISO 8601 strings).',
 
   // Destinations section
   subscriptionId:
-    'Azure subscription GUID that owns the Log Analytics workspace. Example: 00000000-0000-0000-0000-000000000000.',
+    'Azure subscription GUID that owns the Log Analytics workspace.',
   resourceGroupName:
-    'Resource group name that contains the Log Analytics workspace.',
-  workspaceName: 'Log Analytics workspace name where data will be sent.',
+    'Resource group containing the Log Analytics workspace.',
+  workspaceName:
+    'Name of the Log Analytics workspace. This only identifies the workspace — the destination table is specified in the Data Flow output stream.',
   destinationName:
-    'Friendly name to identify this destination. Used in Data Flows to reference where data will be sent.',
+    'A friendly name used to reference this destination in Data Flows. One stream can only send to one Log Analytics workspace per DCR.',
 
   // Data Flows section
   transformKql:
-    'Optional Kusto Query Language (KQL) transformation applied to incoming data before ingestion. Use "source" for no transformation. The transformation must output data matching your output stream schema.',
+    'KQL transformation applied to the incoming stream before ingestion. Use "source" for passthrough (no transformation). The output schema must match the destination table. Only one stream per data flow when using a transform.',
   outputStream:
-    'The destination table name. Use "Custom-[TableName]_CL" for custom tables or "Microsoft-[TableName]" for standard tables. The suffix "_CL" indicates a custom table.',
+    'Destination table. Use "Custom-[TableName]_CL" for custom tables or "Microsoft-[TableName]" for built-in tables (e.g., Microsoft-Syslog). Not needed for known data sources like events or performance counters.',
 }

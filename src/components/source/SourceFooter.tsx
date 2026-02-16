@@ -6,7 +6,7 @@ import { parseJsonSafely } from '@/lib/dcr-utils'
 import { copyToClipboard, downloadJsonFile } from '@/lib/utils'
 
 export function SourceFooter() {
-  const { sourceJson } = useDcrState()
+  const { sourceJson, dcrForm } = useDcrState()
   const dispatch = useDcrDispatch()
 
   const handleFormat = () => {
@@ -34,8 +34,10 @@ export function SourceFooter() {
   }
 
   const handleDownload = () => {
-    downloadJsonFile(sourceJson, 'source.json')
-    toast.success('Downloaded source.json')
+    const base = dcrForm.name.trim() || 'source'
+    const filename = `${base}-source.json`
+    downloadJsonFile(sourceJson, filename)
+    toast.success(`Downloaded ${filename}`)
   }
 
   return (

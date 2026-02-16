@@ -12,17 +12,23 @@ import { generateArmTemplate, generateBicep } from '@/lib/dcr-utils'
 
 type OutputFormat = 'json' | 'arm' | 'bicep'
 
-const formatConfig: Record<
-  OutputFormat,
-  { filename: string; label: string; toastName: string }
-> = {
-  json: { filename: 'dcr.json', label: 'JSON', toastName: 'DCR JSON' },
-  arm: {
-    filename: 'dcr-template.json',
-    label: 'ARM',
-    toastName: 'ARM template',
-  },
-  bicep: { filename: 'main.bicep', label: 'Bicep', toastName: 'Bicep' },
+const formatLabels: Record<OutputFormat, { label: string; toastName: string }> =
+  {
+    json: { label: 'JSON', toastName: 'DCR JSON' },
+    arm: { label: 'ARM', toastName: 'ARM template' },
+    bicep: { label: 'Bicep', toastName: 'Bicep' },
+  }
+
+function getFilename(ruleName: string, format: OutputFormat): string {
+  const base = ruleName.trim() || 'dcr'
+  switch (format) {
+    case 'arm':
+      return `${base}-template.json`
+    case 'bicep':
+      return `${base}.bicep`
+    default:
+      return `${base}.json`
+  }
 }
 
 export function DcrJsonViewer() {
@@ -45,14 +51,14 @@ export function DcrJsonViewer() {
   const handleCopy = async () => {
     const ok = await copyToClipboard(displayedContent)
     if (ok) {
-      toast.success(`${formatConfig[format].toastName} copied to clipboard`)
+      toast.success(`${formatLabels[format].toastName} copied to clipboard`)
     } else {
       toast.error('Failed to copy to clipboard')
     }
   }
 
   const handleDownload = () => {
-    const { filename, toastName } = formatConfig[format]
+    const filename = getFilename(dcrForm.name, format)
     if (format === 'bicep') {
       downloadFile(displayedContent, filename, 'text/plain')
     } else {
@@ -170,11 +176,11 @@ export function DcrJsonViewer() {
       </div>
       <div className="min-h-0 flex-1 flex gap-4 overflow-hidden">
         {/* JSON Editor - 2/3 width */}
-        <div className="w-2/3 min-h-0 flex flex-col overflow-auto p-4">
+        <div className="w-2/3 min-h-0 flex flex-col p-4">
           <h3 className="text-sm font-semibold mb-2 shrink-0">
-            Generated {formatConfig[format].label}
+            Generated {formatLabels[format].label}
           </h3>
-          <div className="min-h-0 flex-1 overflow-auto">
+          <div className="min-h-0 flex-1">
             <JsonEditor
               value={displayedContent}
               readOnly

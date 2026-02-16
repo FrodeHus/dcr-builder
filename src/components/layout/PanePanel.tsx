@@ -11,7 +11,7 @@ export function PanePanel({
   return (
     <div
       className={cn(
-        'flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm',
+        'flex min-h-0 flex-col overflow-hidden rounded-xl border bg-card shadow-sm',
         className,
       )}
     >

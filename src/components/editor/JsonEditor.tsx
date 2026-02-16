@@ -49,7 +49,7 @@ export function JsonEditor({
   return (
     <div
       className={cn(
-        'flex min-h-[320px] overflow-auto rounded-md bg-panel2 font-mono text-sm lg:min-h-[420px]',
+        'flex h-full overflow-auto rounded-md bg-panel2 font-mono text-sm',
         className,
       )}
     >

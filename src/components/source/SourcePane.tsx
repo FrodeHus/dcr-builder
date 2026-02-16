@@ -16,9 +16,9 @@ export function SourcePane() {
         <OriginBadge />
       </PaneStickyHeader>
       <FetchControls />
-      <div className="flex-1 overflow-auto p-4">
-        <div className="relative">
-          {!sourceJson?.trim() && (
+      <div className="min-h-0 flex-1 p-4">
+        <div className="relative h-full">
+          {!sourceJson.trim() && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none z-10">
               <div className="max-w-sm space-y-3 text-muted-foreground">
                 <p className="text-sm font-medium">No JSON data yet</p>
