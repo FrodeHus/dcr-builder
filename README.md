@@ -108,7 +108,8 @@ Switch to the **JSON** tab to:
 
 - Review the generated DCR configuration
 - Copy to clipboard for manual deployment
-- Download as `dcr.json` file
+- Download as a file (named after your rule)
+- Switch between JSON, ARM template, and Bicep output formats
 - Generate a shareable URL for the configuration
 - View deployment instructions for Azure CLI, PowerShell, or ARM templates
 
@@ -116,14 +117,15 @@ Switch to the **JSON** tab to:
 
 ## Features
 
-✨ **Auto-detect JSON schema** - Intelligent type inference from JSON samples  
-🎯 **Form-based editor** - Guided wizard for DCR configuration  
-📋 **Live validation** - Real-time error checking and feedback  
-📥 **Multiple input methods** - Paste, upload, or fetch from API  
-📤 **Multiple output formats** - Copy, download, share via URL  
-🚀 **Deployment helpers** - Built-in instructions for Azure deployment  
-🎨 **Dark/Light mode** - Toggle theme for comfortable viewing  
-📱 **Responsive design** - Works on desktop, tablet, and mobile  
+- **Auto-detect JSON schema** - Intelligent type inference from JSON samples
+- **Form-based editor** - Guided wizard with contextual tooltips for every field
+- **Live validation** - Real-time error checking and feedback
+- **Multiple input methods** - Paste JSON or fetch from API with custom headers
+- **Multiple output formats** - Export as JSON, ARM template, or Bicep
+- **TimeGenerated auto-management** - Automatically appends `| extend TimeGenerated=now()` when needed
+- **Deployment helpers** - Built-in instructions for Azure CLI, PowerShell, and ARM deployment
+- **Dark/Light mode** - Toggle theme for comfortable viewing
+- **Responsive design** - Works on desktop, tablet, and mobile  
 
 ---
 
@@ -227,7 +229,7 @@ npm run check         # Fix both linting and formatting issues
 - **Routing:** [TanStack Router](https://tanstack.com/router) (file-based)
 - **Forms:** [TanStack Form](https://tanstack.com/form)
 - **Tables:** [TanStack Table](https://tanstack.com/table)
-- **State Management:** [TanStack Query](https://tanstack.com/query) v5
+- **State Management:** React Context + useReducer
 - **UI Components:** [Shadcn](https://ui.shadcn.com/) (based on Radix UI)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/) v4
 - **Validation:** [Zod](https://zod.dev/) v4
@@ -235,20 +237,11 @@ npm run check         # Fix both linting and formatting issues
 
 ### Styling
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+Tailwind CSS v4 with CSS-first configuration — all design tokens are in `src/styles.css` using `@theme inline` blocks with `oklch` color values. Dark mode is toggled via the `.dark` class on `<html>`.
 
-#### Removing Tailwind CSS
+### UI Components
 
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Uninstall the packages: `npm install @tailwindcss/vite tailwindcss -D`
-
-### Components
-
-UI components are from [Shadcn](https://ui.shadcn.com/) and can be added using:
+Shadcn components live in `src/components/ui/` and are project-owned. Add new ones with:
 
 ```bash
 pnpm dlx shadcn@latest add <component-name>
@@ -277,7 +270,7 @@ src/
 
 ## Contributing
 
-For detailed information about the codebase architecture and conventions, see [CLAUDE.md](CLAUDE.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines and conventions.
 
 ---
 
