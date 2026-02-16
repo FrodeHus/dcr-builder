@@ -1,10 +1,10 @@
-# DCR Builder
+# Data Collection Rule Builder
 
-A web-based tool for generating **Azure Data Collection Rules (DCRs)** from JSON schemas.
+A web-based tool for generating [Azure Data Collection Rules (DCRs)](https://learn.microsoft.com/en-us/azure/azure-monitor/data-collection/data-collection-rule-create-edit) from JSON schemas.
 
 ## About
 
-DCR Builder simplifies the creation of Data Collection Rules for Azure Monitor. Instead of manually writing JSON configurations, you can:
+Data Collection Rule Builder simplifies the creation of Data Collection Rules for Azure Monitor. Instead of manually writing JSON configurations, you can:
 
 - **Paste or upload** JSON data samples
 - **Specify an API endpoint** that returns JSON
@@ -18,6 +18,7 @@ The application intelligently analyzes your JSON structure and infers appropriat
 - Azure Monitor administrators managing custom log ingestion
 - DevOps teams automating DCR deployment
 - Organizations standardizing data collection pipelines
+- SOC teams onboarding new log sources
 
 ---
 
@@ -257,7 +258,7 @@ pnpm dlx shadcn@latest add <component-name>
 
 ## Project Structure
 
-```
+```text
 src/
 ├── routes/          # File-based routing (TanStack Router)
 ├── components/      # React components
