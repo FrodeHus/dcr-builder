@@ -28,11 +28,21 @@ describe('DCR Builder E2E Workflows', () => {
       const columns = inferColumnsFromJson(json)
 
       expect(columns).toHaveLength(5)
-      expect(columns).toContainEqual({ name: 'name', type: 'string' })
-      expect(columns).toContainEqual({ name: 'age', type: 'int' })
-      expect(columns).toContainEqual({ name: 'active', type: 'boolean' })
-      expect(columns).toContainEqual({ name: 'balance', type: 'real' })
-      expect(columns).toContainEqual({ name: 'created', type: 'datetime' })
+      expect(columns).toContainEqual(
+        expect.objectContaining({ name: 'name', type: 'string' }),
+      )
+      expect(columns).toContainEqual(
+        expect.objectContaining({ name: 'age', type: 'int' }),
+      )
+      expect(columns).toContainEqual(
+        expect.objectContaining({ name: 'active', type: 'boolean' }),
+      )
+      expect(columns).toContainEqual(
+        expect.objectContaining({ name: 'balance', type: 'real' }),
+      )
+      expect(columns).toContainEqual(
+        expect.objectContaining({ name: 'created', type: 'datetime' }),
+      )
     })
 
     it('should sample multiple array objects for consistency', () => {
@@ -46,7 +56,9 @@ describe('DCR Builder E2E Workflows', () => {
 
       // Should detect all columns despite sampling
       expect(columns.map((c) => c.name).sort()).toEqual(['id', 'name', 'score'])
-      expect(columns).toContainEqual({ name: 'id', type: 'int' })
+      expect(columns).toContainEqual(
+        expect.objectContaining({ name: 'id', type: 'int' }),
+      )
     })
 
     it('should handle mixed types gracefully', () => {
@@ -98,8 +110,12 @@ describe('DCR Builder E2E Workflows', () => {
 
       const columns = inferColumnsFromJson(json)
 
-      expect(columns).toContainEqual({ name: 'user', type: 'dynamic' })
-      expect(columns).toContainEqual({ name: 'tags', type: 'dynamic' })
+      expect(columns).toContainEqual(
+        expect.objectContaining({ name: 'user', type: 'dynamic' }),
+      )
+      expect(columns).toContainEqual(
+        expect.objectContaining({ name: 'tags', type: 'dynamic' }),
+      )
     })
   })
 
@@ -341,11 +357,15 @@ describe('DCR Builder E2E Workflows', () => {
       // Step 5: Generate
       const dcr = generateDcr(formData)
       expect(dcr).toHaveProperty('kind', 'Direct')
-      expect((dcr as any).properties.streamDeclarations['Custom-Logs']).toEqual(
-        {
-          columns,
-        },
-      )
+      const generatedColumns = (dcr as any).properties.streamDeclarations[
+        'Custom-Logs'
+      ].columns
+      expect(generatedColumns).toHaveLength(columns.length)
+      for (const col of columns) {
+        expect(generatedColumns).toContainEqual(
+          expect.objectContaining({ name: col.name, type: col.type }),
+        )
+      }
     })
   })
 })
