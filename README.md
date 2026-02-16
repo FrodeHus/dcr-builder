@@ -1,5 +1,7 @@
 # Data Collection Rule Builder
 
+[![Node.js CI](https://github.com/FrodeHus/dcr-builder/actions/workflows/node.js.yml/badge.svg)](https://github.com/FrodeHus/dcr-builder/actions/workflows/node.js.yml)
+
 A web-based tool for generating [Azure Data Collection Rules (DCRs)](https://learn.microsoft.com/en-us/azure/azure-monitor/data-collection/data-collection-rule-create-edit) from JSON schemas.
 
 ## About
