@@ -1,6 +1,6 @@
 # DCR Builder
 
-A web-based tool for generating **Azure Data Collection Rules (DCRs)** from JSON schemas. 
+A web-based tool for generating **Azure Data Collection Rules (DCRs)** from JSON schemas.
 
 ## About
 
@@ -14,6 +14,7 @@ DCR Builder simplifies the creation of Data Collection Rules for Azure Monitor. 
 The application intelligently analyzes your JSON structure and infers appropriate column types (string, int, long, real, boolean, dynamic, datetime) for your DCR stream declarations.
 
 **Perfect for:**
+
 - Azure Monitor administrators managing custom log ingestion
 - DevOps teams automating DCR deployment
 - Organizations standardizing data collection pipelines
@@ -37,6 +38,7 @@ npm run dev
 The application will start at `http://localhost:3000`
 
 **Available scripts:**
+
 ```bash
 npm run dev          # Start development server
 npm run build        # Build for production
@@ -51,6 +53,7 @@ npm run check        # Format & lint fixes
 **Prerequisites:** Docker and Docker Compose installed
 
 **Development (local direct access):**
+
 ```bash
 cp .env.example .env.docker
 docker-compose up -d
@@ -59,6 +62,7 @@ docker-compose up -d
 Access at `http://localhost:3000`
 
 **Production (with Traefik & HTTPS):**
+
 ```bash
 cp .env.example .env.docker
 # Edit .env.docker and set:
@@ -125,7 +129,7 @@ Switch to the **JSON** tab to:
 - **TimeGenerated auto-management** - Automatically appends `| extend TimeGenerated=now()` when needed
 - **Deployment helpers** - Built-in instructions for Azure CLI, PowerShell, and ARM deployment
 - **Dark/Light mode** - Toggle theme for comfortable viewing
-- **Responsive design** - Works on desktop, tablet, and mobile  
+- **Responsive design** - Works on desktop, tablet, and mobile
 
 ---
 
@@ -142,6 +146,7 @@ cp .env.example .env.docker
 ```
 
 Edit `.env.docker` to customize for your environment. Key variables:
+
 - `NODE_ENV` - development/production
 - `APP_PORT_HOST` - Port binding (3000 for dev, 127.0.0.1 for prod)
 - `APP_HOST` - Hostname for routing (localhost for dev, your-domain.com for prod)
@@ -173,6 +178,7 @@ For production behind Traefik:
 3. Run: `docker-compose --profile prod up -d`
 
 Traefik will automatically:
+
 - Issue and manage SSL certificates via Let's Encrypt
 - Redirect HTTP → HTTPS
 - Apply security headers (HSTS, CSP, etc.)
@@ -279,12 +285,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines and convention
 ### Local Development
 
 **Problem: Port 3000 already in use**
+
 ```bash
 # Run on different port:
 npm run dev -- --port 3001
 ```
 
 **Problem: npm install fails**
+
 ```bash
 # Clear cache and reinstall
 npm cache clean --force
@@ -293,6 +301,7 @@ npm install
 ```
 
 **Problem: TypeScript errors**
+
 ```bash
 npm run check  # Fixes formatting and linting issues
 ```
@@ -300,17 +309,20 @@ npm run check  # Fixes formatting and linting issues
 ### Docker Deployment
 
 **Problem: Container exits immediately**
+
 ```bash
 docker-compose logs app  # View error details
 ```
 
 **Problem: Port already in use**
+
 ```bash
 docker-compose down  # Stop all containers
 docker ps -a        # Check for lingering containers
 ```
 
 **Problem: Traefik not issuing certificates (production)**
+
 - Ensure DNS points to the server IP
 - Check `LETSENCRYPT_EMAIL` is set correctly in `.env.docker`
 - Verify domain is accessible from the internet
@@ -321,6 +333,7 @@ docker ps -a        # Check for lingering containers
 ## System Requirements
 
 ### Local Development
+
 - **Node.js:** 22+ (check with `node --version`)
 - **npm:** 10+ (check with `npm --version`)
 - **Disk space:** ~500MB for node_modules
@@ -328,6 +341,7 @@ docker ps -a        # Check for lingering containers
 - **OS:** Windows, macOS, or Linux
 
 ### Docker Deployment
+
 - **Docker:** 20.10+ (check with `docker --version`)
 - **Docker Compose:** 2.0+ (check with `docker-compose --version`)
 - **Disk space:** ~1GB for image
@@ -339,11 +353,13 @@ docker ps -a        # Check for lingering containers
 ## Security Considerations
 
 ### Development
+
 - Application runs on localhost only (not exposed to network)
 - No sensitive data stored in browser
 - Use `.env.docker` for local development only
 
 ### Production
+
 - Application runs behind Traefik reverse proxy with HTTPS
 - All communication encrypted (HTTP → HTTPS redirect)
 - Container runs as non-root user (UID 1001)

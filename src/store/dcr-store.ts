@@ -22,6 +22,8 @@ export interface DcrState {
   validationErrors: Array<ValidationError>
   isFetching: boolean
   mobileSection: MobileSection
+  touchedFields: Set<string>
+  columnsSourceHash: string | null
 }
 
 export type DcrAction =
@@ -56,6 +58,10 @@ export type DcrAction =
   | { type: 'SET_VALIDATION_ERRORS'; payload: Array<ValidationError> }
   | { type: 'SET_FETCHING'; payload: boolean }
   | { type: 'SET_MOBILE_SECTION'; payload: MobileSection }
+  | { type: 'TOUCH_FIELD'; payload: string }
+  | { type: 'TOUCH_ALL_FIELDS' }
+  | { type: 'REINFER_COLUMNS' }
+  | { type: 'DISMISS_REINFER' }
   | { type: 'RESET_SESSION' }
 
 function getStreamName(state: DcrState): string {
@@ -65,10 +71,16 @@ function getStreamName(state: DcrState): string {
 function getColumns(state: DcrState): Array<DcrColumn> {
   const name = getStreamName(state)
   return (
-    (state.dcrForm.streamDeclarations[name] as
-      | { columns: Array<DcrColumn> }
-      | undefined)?.columns ?? []
+    (
+      state.dcrForm.streamDeclarations[name] as
+        | { columns: Array<DcrColumn> }
+        | undefined
+    )?.columns ?? []
   )
+}
+
+export function computeSourceHash(json: string): string {
+  return json.length + ':' + json.slice(0, 200)
 }
 
 function inferAndSetColumns(state: DcrState, jsonString: string): DcrState {
@@ -80,6 +92,7 @@ function inferAndSetColumns(state: DcrState, jsonString: string): DcrState {
       const streamName = getStreamName(state)
       return {
         ...state,
+        columnsSourceHash: computeSourceHash(jsonString),
         dcrForm: {
           ...state.dcrForm,
           streamDeclarations: {
@@ -106,6 +119,8 @@ export const initialState: DcrState = {
   validationErrors: [],
   isFetching: false,
   mobileSection: 'source',
+  touchedFields: new Set<string>(),
+  columnsSourceHash: null,
 }
 
 export function dcrReducer(state: DcrState, action: DcrAction): DcrState {
@@ -206,8 +221,8 @@ export function dcrReducer(state: DcrState, action: DcrAction): DcrState {
         dcrForm: {
           ...state.dcrForm,
           destinations: {
-            logAnalytics: state.dcrForm.destinations.logAnalytics.map(
-              (d, i) => (i === index ? { ...d, [field]: value } : d),
+            logAnalytics: state.dcrForm.destinations.logAnalytics.map((d, i) =>
+              i === index ? { ...d, [field]: value } : d,
             ),
           },
         },
@@ -269,7 +284,35 @@ export function dcrReducer(state: DcrState, action: DcrAction): DcrState {
       return { ...state, isFetching: action.payload }
     case 'SET_MOBILE_SECTION':
       return { ...state, mobileSection: action.payload }
+    case 'TOUCH_FIELD': {
+      const next = new Set(state.touchedFields)
+      next.add(action.payload)
+      return { ...state, touchedFields: next }
+    }
+    case 'TOUCH_ALL_FIELDS':
+      return {
+        ...state,
+        touchedFields: new Set([
+          'name',
+          'location',
+          'streamDeclarations',
+          'destinations',
+          'dataFlows',
+        ]),
+      }
+    case 'REINFER_COLUMNS':
+      return inferAndSetColumns(
+        { ...state, columnsSourceHash: null },
+        state.sourceJson,
+      )
+    case 'DISMISS_REINFER':
+      return {
+        ...state,
+        columnsSourceHash: state.sourceJson.trim()
+          ? computeSourceHash(state.sourceJson)
+          : null,
+      }
     case 'RESET_SESSION':
-      return { ...initialState }
+      return { ...initialState, touchedFields: new Set<string>() }
   }
 }

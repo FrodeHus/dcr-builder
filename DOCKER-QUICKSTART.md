@@ -49,11 +49,13 @@ docker-compose down
 ### 2. Configure Environment
 
 Copy the template and customize for production:
+
 ```bash
 cp .env.example .env.docker
 ```
 
 Edit `.env.docker` and update these values for production:
+
 ```env
 NODE_ENV=production
 APP_PORT_HOST=127.0.0.1       # Internal only (Traefik handles external)
@@ -85,12 +87,14 @@ The application is now running behind Traefik with automatic HTTPS configured fo
 ## Security Scanning
 
 Run the security scanning script to validate your setup:
+
 ```bash
 chmod +x scripts/docker-security-scan.sh
 ./scripts/docker-security-scan.sh
 ```
 
 This will:
+
 - Verify Docker installation
 - Build the image
 - Check image configuration
@@ -129,6 +133,7 @@ docker-compose down -v
 ```bash
 docker-compose up -d --scale app=3
 ```
+
 Note: Requires load balancer in front (Caddy, nginx, etc.)
 
 ### Check Container Resource Usage
@@ -158,7 +163,9 @@ lsof -i :3000
 ```bash
 docker-compose logs app
 ```
+
 Check for errors in logs. Common issues:
+
 - Build errors - check Dockerfile syntax
 - Missing environment variables
 - Out of disk space
@@ -166,6 +173,7 @@ Check for errors in logs. Common issues:
 ### Out of Memory
 
 Container is limited to 512MB by default:
+
 ```bash
 # Increase memory limit in docker-compose.yml
 deploy:
@@ -177,9 +185,11 @@ deploy:
 ### High CPU Usage
 
 Check application logs and:
+
 ```bash
 docker stats
 ```
+
 Adjust CPU limits accordingly.
 
 ## Environment Variables
@@ -193,6 +203,7 @@ cp .env.example .env.docker
 ```
 
 Key variables:
+
 - `NODE_ENV=production` - Set to production for production deployments
 - `APP_PORT_HOST` - Port binding (3000 for dev, 127.0.0.1 for prod)
 - `APP_HOST` - Hostname (localhost for dev, your-domain for prod)
@@ -248,6 +259,7 @@ docker-compose logs -f
 ### 4. Regular Updates
 
 Keep the base image updated:
+
 ```bash
 # Rebuild to get latest base image patches
 docker-compose build --no-cache
@@ -260,6 +272,7 @@ docker-compose build --no-cache --pull
 ### 5. Backup Data
 
 If using volumes:
+
 ```bash
 docker run --rm -v dcr-builder-data:/data -v $(pwd):/backup \
   alpine tar czf /backup/backup.tar.gz -C / data
@@ -268,6 +281,7 @@ docker run --rm -v dcr-builder-data:/data -v $(pwd):/backup \
 ### 6. Secrets Management
 
 Never commit secrets. Use:
+
 ```bash
 # Docker Secrets (Swarm)
 docker secret create db_password -
@@ -296,6 +310,7 @@ docker stack deploy -c docker-compose.yml dcr-builder
 ### Kubernetes
 
 Convert using Kompose:
+
 ```bash
 # Generate dev deployment manifests
 kompose convert -f docker-compose.yml
@@ -319,6 +334,7 @@ az container create \
 ### AWS ECS
 
 Use docker-compose to generate ECS task definition:
+
 ```bash
 docker compose convert > ecs-task-def.json
 ```
@@ -344,6 +360,7 @@ docker compose convert > ecs-task-def.json
 - Security best practices: [CIS Docker Benchmark](https://www.cisecurity.org/benchmark/docker)
 
 For issues, check logs first:
+
 ```bash
 docker-compose logs -f app
 ```

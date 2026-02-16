@@ -1,6 +1,6 @@
+import path from 'node:path'
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
-import path from 'path'
 
 /**
  * Vitest configuration for unit and E2E tests

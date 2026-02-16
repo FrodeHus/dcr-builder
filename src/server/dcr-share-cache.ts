@@ -44,11 +44,9 @@ function cleanupExpired() {
   // If cache exceeds max size, remove least recently used entries
   if (cache.size > MAX_CACHE_ENTRIES) {
     const entriesToRemove = cache.size - MAX_CACHE_ENTRIES
-    const sortedByAccess = Array.from(cache.entries())
-      .sort(
-        ([, a], [, b]) =>
-          a.lastAccessedAt - b.lastAccessedAt,
-      )
+    const sortedByAccess = Array.from(cache.entries()).sort(
+      ([, a], [, b]) => a.lastAccessedAt - b.lastAccessedAt,
+    )
 
     for (let i = 0; i < entriesToRemove; i++) {
       const [key] = sortedByAccess[i]

@@ -14,7 +14,7 @@ http:
     security-headers:
       headers:
         accessControlAllowOriginList:
-          - "https://dcr.reothor.no"
+          - 'https://dcr.reothor.no'
         accessControlMaxAge: 100
         addVaryHeader: true
         # HSTS - Strict Transport Security (1 year)
@@ -27,7 +27,7 @@ http:
         browserXssFilter: true
         # Frame options
         contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'"
-        referrerPolicy: "strict-origin-when-cross-origin"
+        referrerPolicy: 'strict-origin-when-cross-origin'
 
   # Optional: Add more routes here if needed
   routers:
@@ -35,5 +35,4 @@ http:
     {}
 
   # Services will be auto-discovered from Docker labels
-  services:
-    {}
+  services: {}

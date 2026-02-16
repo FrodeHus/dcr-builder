@@ -9,8 +9,7 @@ export const dcrTooltips = {
   name: 'Unique identifier for this Data Collection Rule within your resource group.',
   location:
     'Azure region where the DCR will be deployed (e.g., "eastus", "westeurope"). Should match the region of your monitored resources.',
-  description:
-    'Optional user-defined description of the Data Collection Rule.',
+  description: 'Optional user-defined description of the Data Collection Rule.',
   dataCollectionEndpointId:
     'Resource ID of the Data Collection Endpoint (DCE). For DCRs with kind "Direct", an endpoint is created automatically if not specified. Required when using Private Link.',
 
@@ -25,8 +24,7 @@ export const dcrTooltips = {
   // Destinations section
   subscriptionId:
     'Azure subscription GUID that owns the Log Analytics workspace.',
-  resourceGroupName:
-    'Resource group containing the Log Analytics workspace.',
+  resourceGroupName: 'Resource group containing the Log Analytics workspace.',
   workspaceName:
     'Name of the Log Analytics workspace. This only identifies the workspace — the destination table is specified in the Data Flow output stream.',
   destinationName:

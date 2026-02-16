@@ -31,8 +31,7 @@ export const MAX_CACHE_ENTRIES = 10000
  * Maximum single cache entry size (5 MB)
  */
 export const MAX_CACHE_ENTRY_SIZE_MB = 5
-export const MAX_CACHE_ENTRY_SIZE_BYTES =
-  MAX_CACHE_ENTRY_SIZE_MB * 1024 * 1024
+export const MAX_CACHE_ENTRY_SIZE_BYTES = MAX_CACHE_ENTRY_SIZE_MB * 1024 * 1024
 
 /**
  * Default cache TTL (30 minutes)

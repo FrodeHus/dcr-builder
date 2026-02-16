@@ -1,5 +1,6 @@
-import { Component, type ReactNode, type ErrorInfo } from 'react'
+import { Component   } from 'react'
 import { AlertCircle, RefreshCw } from 'lucide-react'
+import type {ErrorInfo, ReactNode} from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 
@@ -74,30 +75,31 @@ export class ErrorBoundary extends Component<Props, State> {
                     </p>
                   </div>
 
-                  {process.env.NODE_ENV === 'development' && this.state.error && (
-                    <details className="text-xs whitespace-pre-wrap overflow-auto max-h-60 bg-muted p-2 rounded border">
-                      <summary className="cursor-pointer font-mono mb-2">
-                        Error details (development only)
-                      </summary>
-                      <div>
-                        <strong>Message:</strong>
-                        {'\n'}
-                        {this.state.error.toString()}
-                        {'\n\n'}
-                        <strong>Stack:</strong>
-                        {'\n'}
-                        {this.state.error.stack}
-                        {'\n\n'}
-                        {this.state.errorInfo?.componentStack && (
-                          <>
-                            <strong>Component Stack:</strong>
-                            {'\n'}
-                            {this.state.errorInfo.componentStack}
-                          </>
-                        )}
-                      </div>
-                    </details>
-                  )}
+                  {process.env.NODE_ENV === 'development' &&
+                    this.state.error && (
+                      <details className="text-xs whitespace-pre-wrap overflow-auto max-h-60 bg-muted p-2 rounded border">
+                        <summary className="cursor-pointer font-mono mb-2">
+                          Error details (development only)
+                        </summary>
+                        <div>
+                          <strong>Message:</strong>
+                          {'\n'}
+                          {this.state.error.toString()}
+                          {'\n\n'}
+                          <strong>Stack:</strong>
+                          {'\n'}
+                          {this.state.error.stack}
+                          {'\n\n'}
+                          {this.state.errorInfo?.componentStack && (
+                            <>
+                              <strong>Component Stack:</strong>
+                              {'\n'}
+                              {this.state.errorInfo.componentStack}
+                            </>
+                          )}
+                        </div>
+                      </details>
+                    )}
 
                   <div className="flex gap-2 flex-wrap pt-2">
                     <Button

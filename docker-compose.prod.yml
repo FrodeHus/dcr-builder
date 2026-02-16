@@ -8,40 +8,40 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    
+
     container_name: dcr-builder-app
     restart: unless-stopped
-    
+
     # Only expose internally to Traefik, no direct port access
     expose:
       - 3000
-    
+
     env_file:
       - .env.docker
-    
+
     environment:
       - NODE_ENV=production
-    
+
     labels:
       # Enable Traefik routing for this container
-      - "traefik.enable=true"
+      - 'traefik.enable=true'
       # HTTP router redirects to HTTPS
-      - "traefik.http.routers.dcr-builder-http.rule=Host(`dcr.reothor.no`)"
-      - "traefik.http.routers.dcr-builder-http.entrypoints=web"
-      - "traefik.http.routers.dcr-builder-http.middlewares=redirect@file"
+      - 'traefik.http.routers.dcr-builder-http.rule=Host(`dcr.reothor.no`)'
+      - 'traefik.http.routers.dcr-builder-http.entrypoints=web'
+      - 'traefik.http.routers.dcr-builder-http.middlewares=redirect@file'
       # HTTPS router
-      - "traefik.http.routers.dcr-builder.rule=Host(`dcr.reothor.no`)"
-      - "traefik.http.routers.dcr-builder.entrypoints=websecure"
-      - "traefik.http.routers.dcr-builder.tls.certresolver=letsencrypt"
+      - 'traefik.http.routers.dcr-builder.rule=Host(`dcr.reothor.no`)'
+      - 'traefik.http.routers.dcr-builder.entrypoints=websecure'
+      - 'traefik.http.routers.dcr-builder.tls.certresolver=letsencrypt'
       # Load balancer service
-      - "traefik.http.services.dcr-builder.loadbalancer.server.port=3000"
-    
+      - 'traefik.http.services.dcr-builder.loadbalancer.server.port=3000'
+
     security_opt:
       - no-new-privileges:true
-    
+
     cap_drop:
       - ALL
-    
+
     deploy:
       resources:
         limits:
@@ -55,32 +55,38 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
-    
+
     read_only: true
-    
+
     tmpfs:
       - /app/tmp
       - /tmp
-    
+
     # Internal health check (Traefik provides external health via routing)
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "require('http').get('http://localhost:3000/', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})",
+        ]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
-    
+
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "10m"
-        max-file: "5"
-        labels: "service=dcr-builder"
-    
-    user: "1001:1001"
+        max-size: '10m'
+        max-file: '5'
+        labels: 'service=dcr-builder'
+
+    user: '1001:1001'
     networks:
       - dcr-network
-    
+
     privileged: false
     shm_size: 64M
 
@@ -89,12 +95,12 @@ services:
     image: traefik:v3.0
     container_name: dcr-builder-traefik
     restart: unless-stopped
-    
+
     # Only Traefik exposes ports to the host
     ports:
-      - "80:80"
-      - "443:443"
-    
+      - '80:80'
+      - '443:443'
+
     volumes:
       # Docker socket for container autodiscovery
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -102,46 +108,46 @@ services:
       - traefik-acme:/acme
       # Dynamic configuration for security headers
       - ./traefik-dynamic.yml:/etc/traefik/dynamic.yml:ro
-    
+
     environment:
       # Let's Encrypt ACME configuration
       - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_HTTPCHALLENGE_ENTRYPOINT=web
       - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_STORAGE=/acme/acme.json
       - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL=admin@reothor.no
-    
+
     command:
       # API & Web UI
-      - "--api.insecure=false"
-      - "--api.dashboard=false"
-      
+      - '--api.insecure=false'
+      - '--api.dashboard=false'
+
       # Docker provider configuration
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network=dcr-network"
-      
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--providers.docker.network=dcr-network'
+
       # File provider for dynamic config (middlewares, etc.)
-      - "--providers.file.filename=/etc/traefik/dynamic.yml"
-      - "--providers.file.watch=true"
-      
+      - '--providers.file.filename=/etc/traefik/dynamic.yml'
+      - '--providers.file.watch=true'
+
       # Entry points
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--entrypoints.web.http.redirections.entrypoint.main=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.websecure.address=:443'
+      - '--entrypoints.web.http.redirections.entrypoint.main=websecure'
+      - '--entrypoints.web.http.redirections.entrypoint.scheme=https'
+
       # Logging
-      - "--log.level=INFO"
-      - "--accesslog=true"
-    
+      - '--log.level=INFO'
+      - '--accesslog=true'
+
     security_opt:
       - no-new-privileges:true
-    
+
     cap_drop:
       - ALL
-    
+
     cap_add:
       - NET_BIND_SERVICE
-    
+
     deploy:
       resources:
         limits:
@@ -150,30 +156,30 @@ services:
         reservations:
           cpus: '0.25'
           memory: 128M
-    
+
     read_only: true
     tmpfs:
       - /tmp
       - /run
-    
+
     healthcheck:
-      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      test: ['CMD', 'traefik', 'healthcheck', '--ping']
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 5s
-    
+
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "10m"
-        max-file: "3"
-        labels: "service=dcr-traefik"
-    
-    user: "1001:1001"
+        max-size: '10m'
+        max-file: '3'
+        labels: 'service=dcr-traefik'
+
+    user: '1001:1001'
     networks:
       - dcr-network
-    
+
     privileged: false
     shm_size: 32M
 

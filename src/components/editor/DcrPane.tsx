@@ -23,6 +23,7 @@ export function DcrPane() {
   const dispatch = useDcrDispatch()
 
   const handleValidate = () => {
+    dispatch({ type: 'TOUCH_ALL_FIELDS' })
     const errors = validateDcr(dcrForm)
     dispatch({ type: 'SET_VALIDATION_ERRORS', payload: errors })
     if (errors.length === 0) {
@@ -33,6 +34,7 @@ export function DcrPane() {
   }
 
   const handleApply = () => {
+    dispatch({ type: 'TOUCH_ALL_FIELDS' })
     const errors = validateDcr(dcrForm)
     dispatch({ type: 'SET_VALIDATION_ERRORS', payload: errors })
     if (errors.some((e) => e.severity === 'error')) {

@@ -4,7 +4,7 @@ version: '3.9'
 # Copy .env.example to .env.docker and customize for your environment:
 #   Development: docker-compose up -d
 #   Production:  docker-compose --profile prod up -d
-# 
+#
 # For production, edit .env.docker and set:
 #   NODE_ENV=production
 #   APP_PORT_HOST=127.0.0.1
@@ -16,80 +16,86 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    
+
     container_name: dcr-builder-app
     restart: unless-stopped
-    
+
     # Conditional port exposure: direct access for dev, internal for prod
     ports:
-      - "${APP_PORT_HOST}:${APP_PORT}"
-    
+      - '${APP_PORT_HOST}:${APP_PORT}'
+
     expose:
-      - "${APP_PORT}"
-    
+      - '${APP_PORT}'
+
     env_file:
       - .env.docker
-    
+
     environment:
       - NODE_ENV=${NODE_ENV}
       - PORT=${APP_PORT}
       - HOST=0.0.0.0
-    
+
     labels:
       # Traefik configuration (only used when traefik is running)
-      - "traefik.enable=${TRAEFIK_ENABLED:-false}"
-      - "traefik.http.routers.dcr-builder-http.rule=Host(`${APP_HOST}`)"
-      - "traefik.http.routers.dcr-builder-http.entrypoints=web"
-      - "traefik.http.routers.dcr-builder-http.middlewares=redirect@file"
-      - "traefik.http.routers.dcr-builder.rule=Host(`${APP_HOST}`)"
-      - "traefik.http.routers.dcr-builder.entrypoints=websecure"
-      - "traefik.http.routers.dcr-builder.tls.certresolver=${CERT_RESOLVER:-letsencrypt}"
-      - "traefik.http.services.dcr-builder.loadbalancer.server.port=${APP_PORT}"
-    
+      - 'traefik.enable=${TRAEFIK_ENABLED:-false}'
+      - 'traefik.http.routers.dcr-builder-http.rule=Host(`${APP_HOST}`)'
+      - 'traefik.http.routers.dcr-builder-http.entrypoints=web'
+      - 'traefik.http.routers.dcr-builder-http.middlewares=redirect@file'
+      - 'traefik.http.routers.dcr-builder.rule=Host(`${APP_HOST}`)'
+      - 'traefik.http.routers.dcr-builder.entrypoints=websecure'
+      - 'traefik.http.routers.dcr-builder.tls.certresolver=${CERT_RESOLVER:-letsencrypt}'
+      - 'traefik.http.services.dcr-builder.loadbalancer.server.port=${APP_PORT}'
+
     security_opt:
       - no-new-privileges:true
-    
+
     cap_drop:
       - ALL
-    
+
     deploy:
       resources:
         limits:
-          cpus: "${RESOURCES_CPU_LIMIT}"
-          memory: "${RESOURCES_MEMORY_LIMIT}"
+          cpus: '${RESOURCES_CPU_LIMIT}'
+          memory: '${RESOURCES_MEMORY_LIMIT}'
         reservations:
-          cpus: "${RESOURCES_CPU_RESERVED}"
-          memory: "${RESOURCES_MEMORY_RESERVED}"
+          cpus: '${RESOURCES_CPU_RESERVED}'
+          memory: '${RESOURCES_MEMORY_RESERVED}'
         restart_policy:
           condition: on-failure
           delay: 5s
           max_attempts: 3
           window: 120s
-    
+
     read_only: true
-    
+
     tmpfs:
       - /app/tmp
       - /tmp
-    
+
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:${APP_PORT}/', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "require('http').get('http://localhost:${APP_PORT}/', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})",
+        ]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
-    
+
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "${LOG_MAX_SIZE}"
-        max-file: "${LOG_MAX_FILE}"
-        labels: "service=dcr-builder"
-    
-    user: "1001:1001"
+        max-size: '${LOG_MAX_SIZE}'
+        max-file: '${LOG_MAX_FILE}'
+        labels: 'service=dcr-builder'
+
+    user: '1001:1001'
     networks:
       - dcr-network
-    
+
     privileged: false
     shm_size: 64M
 
@@ -98,91 +104,91 @@ services:
     image: traefik:v3.0
     container_name: dcr-builder-traefik
     restart: unless-stopped
-    
+
     # Production-only profile
     profiles:
       - prod
-    
+
     ports:
-      - "80:80"
-      - "443:443"
-    
+      - '80:80'
+      - '443:443'
+
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik-acme:/acme
       - ./traefik-dynamic.yml:/etc/traefik/dynamic.yml:ro
-    
+
     environment:
       # Let's Encrypt configuration
       - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_HTTPCHALLENGE_ENTRYPOINT=web
       - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_STORAGE=/acme/acme.json
       - TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL=${LETSENCRYPT_EMAIL}
-    
+
     command:
       # API & Dashboard
-      - "--api.insecure=false"
-      - "--api.dashboard=false"
-      
+      - '--api.insecure=false'
+      - '--api.dashboard=false'
+
       # Docker provider
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network=dcr-network"
-      
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--providers.docker.network=dcr-network'
+
       # File provider for dynamic config
-      - "--providers.file.filename=/etc/traefik/dynamic.yml"
-      - "--providers.file.watch=true"
-      
+      - '--providers.file.filename=/etc/traefik/dynamic.yml'
+      - '--providers.file.watch=true'
+
       # Entry points
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--entrypoints.web.http.redirections.entrypoint.main=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.websecure.address=:443'
+      - '--entrypoints.web.http.redirections.entrypoint.main=websecure'
+      - '--entrypoints.web.http.redirections.entrypoint.scheme=https'
+
       # Logging
-      - "--log.level=${TRAEFIK_LOG_LEVEL}"
-      - "--accesslog=true"
-    
+      - '--log.level=${TRAEFIK_LOG_LEVEL}'
+      - '--accesslog=true'
+
     security_opt:
       - no-new-privileges:true
-    
+
     cap_drop:
       - ALL
-    
+
     cap_add:
       - NET_BIND_SERVICE
-    
+
     deploy:
       resources:
         limits:
-          cpus: "${TRAEFIK_CPU_LIMIT}"
-          memory: "${TRAEFIK_MEMORY_LIMIT}"
+          cpus: '${TRAEFIK_CPU_LIMIT}'
+          memory: '${TRAEFIK_MEMORY_LIMIT}'
         reservations:
-          cpus: "${TRAEFIK_CPU_RESERVED}"
-          memory: "${TRAEFIK_MEMORY_RESERVED}"
-    
+          cpus: '${TRAEFIK_CPU_RESERVED}'
+          memory: '${TRAEFIK_MEMORY_RESERVED}'
+
     read_only: true
     tmpfs:
       - /tmp
       - /run
-    
+
     healthcheck:
-      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      test: ['CMD', 'traefik', 'healthcheck', '--ping']
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 5s
-    
+
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "${LOG_MAX_SIZE}"
-        max-file: "${LOG_MAX_FILE}"
-        labels: "service=dcr-traefik"
-    
-    user: "1001:1001"
+        max-size: '${LOG_MAX_SIZE}'
+        max-file: '${LOG_MAX_FILE}'
+        labels: 'service=dcr-traefik'
+
+    user: '1001:1001'
     networks:
       - dcr-network
-    
+
     privileged: false
     shm_size: 32M
 

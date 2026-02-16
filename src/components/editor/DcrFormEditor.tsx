@@ -1,5 +1,12 @@
-import { AlertCircle, AlertTriangle, Plus, Trash2 } from 'lucide-react'
-import type { DcrColumnType } from '@/types/dcr'
+import { useCallback } from 'react'
+import {
+  AlertCircle,
+  AlertTriangle,
+  Plus,
+  RefreshCw,
+  Trash2,
+} from 'lucide-react'
+import type { DcrColumnType, ValidationError } from '@/types/dcr'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -23,9 +30,13 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useDcrDispatch, useDcrState } from '@/store/dcr-context'
+import { computeSourceHash } from '@/store/dcr-store'
+import { validateDcr } from '@/lib/dcr-utils'
 import { dcrTooltips } from '@/data/dcr-tooltips'
 import { HelpTooltip } from '@/components/HelpTooltip'
 import { TooltipLabel } from '@/components/TooltipLabel'
+import { FieldError } from '@/components/FieldError'
+import { LocationCombobox } from '@/components/LocationCombobox'
 
 const COLUMN_TYPES: Array<DcrColumnType> = [
   'string',
@@ -38,7 +49,13 @@ const COLUMN_TYPES: Array<DcrColumnType> = [
 ]
 
 export function DcrFormEditor() {
-  const { dcrForm, validationErrors } = useDcrState()
+  const {
+    dcrForm,
+    validationErrors,
+    touchedFields,
+    sourceJson,
+    columnsSourceHash,
+  } = useDcrState()
   const dispatch = useDcrDispatch()
 
   const streamName =
@@ -49,6 +66,40 @@ export function DcrFormEditor() {
       : undefined) ?? []
   const destinations = dcrForm.destinations.logAnalytics
   const dataFlows = dcrForm.dataFlows
+
+  const streamNames = Object.keys(dcrForm.streamDeclarations)
+  const destinationNames = destinations.map((d) => d.name).filter(Boolean)
+
+  const getFieldErrors = useCallback(
+    (field: string): Array<ValidationError> => {
+      if (!touchedFields.has(field)) return []
+      return validationErrors.filter((e) => e.field === field)
+    },
+    [touchedFields, validationErrors],
+  )
+
+  const touchAndValidate = useCallback(
+    (field: string) => {
+      dispatch({ type: 'TOUCH_FIELD', payload: field })
+      dispatch({
+        type: 'SET_VALIDATION_ERRORS',
+        payload: validateDcr(dcrForm),
+      })
+    },
+    [dispatch, dcrForm],
+  )
+
+  const nameErrors = getFieldErrors('name')
+  const locationErrors = getFieldErrors('location')
+  const streamErrors = getFieldErrors('streamDeclarations')
+  const destinationErrors = getFieldErrors('destinations')
+  const dataFlowErrors = getFieldErrors('dataFlows')
+
+  const sourceChanged =
+    columns.length > 0 &&
+    sourceJson.trim() !== '' &&
+    columnsSourceHash !== null &&
+    computeSourceHash(sourceJson) !== columnsSourceHash
 
   return (
     <div className="p-4">
@@ -76,8 +127,11 @@ export function DcrFormEditor() {
                     payload: { name: e.target.value },
                   })
                 }
+                onBlur={() => touchAndValidate('name')}
+                aria-invalid={nameErrors.length > 0}
                 placeholder="my-data-collection-rule"
               />
+              <FieldError errors={nameErrors} />
             </div>
             <div className="space-y-1.5">
               <TooltipLabel
@@ -85,17 +139,18 @@ export function DcrFormEditor() {
                 tooltip={dcrTooltips.location}
                 required
               />
-              <Input
-                id="dcr-location"
+              <LocationCombobox
                 value={dcrForm.location}
-                onChange={(e) =>
+                onChange={(value) =>
                   dispatch({
                     type: 'UPDATE_DCR_FORM',
-                    payload: { location: e.target.value },
+                    payload: { location: value },
                   })
                 }
-                placeholder="westeurope"
+                onBlur={() => touchAndValidate('location')}
+                aria-invalid={locationErrors.length > 0}
               />
+              <FieldError errors={locationErrors} />
             </div>
             <div className="space-y-1.5">
               <TooltipLabel
@@ -163,11 +218,41 @@ export function DcrFormEditor() {
                       payload: e.target.value,
                     })
                   }
+                  onBlur={() => touchAndValidate('streamDeclarations')}
+                  aria-invalid={streamErrors.length > 0}
                   placeholder="MyStream"
                   className="flex-1"
                 />
               </div>
+              <FieldError errors={streamErrors} />
             </div>
+
+            {sourceChanged && (
+              <Alert>
+                <RefreshCw className="h-4 w-4" />
+                <AlertDescription className="flex items-center justify-between">
+                  <span>
+                    Source JSON has changed since columns were inferred.
+                  </span>
+                  <span className="flex gap-2 ml-2 shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => dispatch({ type: 'REINFER_COLUMNS' })}
+                    >
+                      Update columns
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => dispatch({ type: 'DISMISS_REINFER' })}
+                    >
+                      Dismiss
+                    </Button>
+                  </span>
+                </AlertDescription>
+              </Alert>
+            )}
 
             <div className="space-y-2">
               <TooltipLabel
@@ -288,6 +373,9 @@ export function DcrFormEditor() {
             />
           </div>
           <AccordionContent className="mt-3 space-y-3">
+            {destinationErrors.length > 0 && (
+              <FieldError errors={destinationErrors} />
+            )}
             {destinations.map((dest, i) => (
               <div key={dest.id} className="space-y-2 rounded-md border p-3">
                 <div className="flex items-center justify-between">
@@ -322,6 +410,7 @@ export function DcrFormEditor() {
                         },
                       })
                     }
+                    onBlur={() => touchAndValidate('destinations')}
                     placeholder="00000000-0000-0000-0000-000000000000"
                   />
                 </div>
@@ -343,6 +432,7 @@ export function DcrFormEditor() {
                         },
                       })
                     }
+                    onBlur={() => touchAndValidate('destinations')}
                     placeholder="my-resource-group"
                   />
                 </div>
@@ -364,6 +454,7 @@ export function DcrFormEditor() {
                         },
                       })
                     }
+                    onBlur={() => touchAndValidate('destinations')}
                     placeholder="my-log-workspace"
                   />
                 </div>
@@ -385,6 +476,7 @@ export function DcrFormEditor() {
                         },
                       })
                     }
+                    onBlur={() => touchAndValidate('destinations')}
                     placeholder="Destination name"
                   />
                 </div>
@@ -413,6 +505,9 @@ export function DcrFormEditor() {
             />
           </div>
           <AccordionContent className="mt-3 space-y-3">
+            {dataFlowErrors.length > 0 && (
+              <FieldError errors={dataFlowErrors} />
+            )}
             {dataFlows.map((flow, i) => (
               <div key={flow.id} className="space-y-2 rounded-md border p-3">
                 <div className="flex items-center justify-between">
@@ -431,6 +526,78 @@ export function DcrFormEditor() {
                 </div>
                 <div className="space-y-1.5">
                   <TooltipLabel
+                    label="Stream"
+                    tooltip={dcrTooltips.streamName}
+                    required
+                  />
+                  {streamNames.length > 0 ? (
+                    <Select
+                      value={flow.streams[0] || ''}
+                      onValueChange={(val) =>
+                        dispatch({
+                          type: 'UPDATE_DATA_FLOW',
+                          payload: {
+                            index: i,
+                            patch: { streams: [val] },
+                          },
+                        })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select stream" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {streamNames.map((name) => (
+                          <SelectItem key={name} value={name}>
+                            {name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Add a stream declaration first
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <TooltipLabel
+                    label="Destination"
+                    tooltip={dcrTooltips.destinationName}
+                    required
+                  />
+                  {destinationNames.length > 0 ? (
+                    <Select
+                      value={flow.destinations[0] || ''}
+                      onValueChange={(val) =>
+                        dispatch({
+                          type: 'UPDATE_DATA_FLOW',
+                          payload: {
+                            index: i,
+                            patch: { destinations: [val] },
+                          },
+                        })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select destination" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {destinationNames.map((name) => (
+                          <SelectItem key={name} value={name}>
+                            {name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Add a destination first
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <TooltipLabel
                     label="Transform KQL"
                     tooltip={dcrTooltips.transformKql}
                     required
@@ -446,6 +613,7 @@ export function DcrFormEditor() {
                         },
                       })
                     }
+                    onBlur={() => touchAndValidate('dataFlows')}
                     placeholder="source"
                     rows={2}
                   />
@@ -468,6 +636,7 @@ export function DcrFormEditor() {
                       })
                     }
                     onBlur={(e) => {
+                      touchAndValidate('dataFlows')
                       const value = e.target.value.trim()
                       if (!value) return
 

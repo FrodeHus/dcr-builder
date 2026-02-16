@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { DcrProvider } from '@/store/dcr-context'
 import { DcrPane } from '@/components/editor/DcrPane'
 import { SourcePane } from '@/components/source/SourcePane'
 import {
-  inferColumnsFromJson,
-  validateDcr,
   generateDcr,
+  inferColumnsFromJson,
   parseJsonSafely,
+  validateDcr,
 } from '@/lib/dcr-utils'
 
 /**
@@ -121,9 +121,7 @@ describe('DCR Builder E2E Workflows', () => {
         data: 'x'.repeat(11 * 1024 * 1024),
       })
 
-      expect(() => parseJsonSafely(largeJson)).toThrow(
-        'exceeds maximum size',
-      )
+      expect(() => parseJsonSafely(largeJson)).toThrow('exceeds maximum size')
     })
 
     it('should handle empty and null inputs', () => {
@@ -343,9 +341,11 @@ describe('DCR Builder E2E Workflows', () => {
       // Step 5: Generate
       const dcr = generateDcr(formData)
       expect(dcr).toHaveProperty('kind', 'Direct')
-      expect((dcr as any).properties.streamDeclarations['Custom-Logs']).toEqual({
-        columns,
-      })
+      expect((dcr as any).properties.streamDeclarations['Custom-Logs']).toEqual(
+        {
+          columns,
+        },
+      )
     })
   })
 })

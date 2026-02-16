@@ -163,9 +163,7 @@ export function generateDcr(formData: DcrFormData): object {
     string,
     { columns: Array<{ name: string; type: DcrColumnType }> }
   > = {}
-  for (const [streamKey, decl] of Object.entries(
-    formData.streamDeclarations,
-  )) {
+  for (const [streamKey, decl] of Object.entries(formData.streamDeclarations)) {
     streamDeclarations[streamKey] = {
       columns: decl.columns.map(({ name, type }) => ({ name, type })),
     }
@@ -190,11 +188,10 @@ export function generateDcr(formData: DcrFormData): object {
         ? transformKql.slice(0, -autoFragment.length)
         : transformKql
 
-      const allColumns = streams.flatMap(
-        (streamKey) =>
-          (streamKey in formData.streamDeclarations
-            ? formData.streamDeclarations[streamKey].columns
-            : []),
+      const allColumns = streams.flatMap((streamKey) =>
+        streamKey in formData.streamDeclarations
+          ? formData.streamDeclarations[streamKey].columns
+          : [],
       )
       const hasTimeGenerated = allColumns.some(
         (col) => col.name === 'TimeGenerated',
@@ -388,8 +385,7 @@ export function validateDcr(formData: DcrFormData): Array<ValidationError> {
     if (!flow.outputStream.trim()) {
       errors.push({
         field: 'dataFlows',
-        message:
-          'Output stream is required (e.g., "Custom-ProcessedData_CL")',
+        message: 'Output stream is required (e.g., "Custom-ProcessedData_CL")',
         severity: 'warning',
       })
     }
@@ -431,7 +427,9 @@ function toBicepValue(value: unknown, indent: number): string {
   }
   if (Array.isArray(value)) {
     if (value.length === 0) return '[]'
-    const items = value.map((item) => `${innerPad}${toBicepValue(item, indent + 1)}`)
+    const items = value.map(
+      (item) => `${innerPad}${toBicepValue(item, indent + 1)}`,
+    )
     return `[\n${items.join('\n')}\n${pad}]`
   }
   if (typeof value === 'object') {

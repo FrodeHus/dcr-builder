@@ -11,7 +11,7 @@ type PerformanceMetric = {
   metadata?: Record<string, unknown>
 }
 
-const metrics: Map<string, PerformanceMetric[]> = new Map()
+const metrics: Map<string, Array<PerformanceMetric>> = new Map()
 
 /**
  * Start measuring performance for a named operation
